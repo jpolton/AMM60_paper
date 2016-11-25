@@ -399,7 +399,7 @@ def delta_diagnose( profile, time_counter, depth, max_depth ):
         delta = depth[index] * (temp_bot - temp_bar) / (temp_top - temp_bot)
         delta = np.abs(np.tile(delta, (1,1,1)).T) # DoodsonX0 expects a (time, y, x) array 
     
-    elif ndims == 4: # i.e. function of depth, time, y, x. Need to unpack top, mean, bottom quantities to make delta
+    if ndims == 4: # i.e. function of depth, time, y, x. Need to unpack top, mean, bottom quantities to make delta
     
         rho_top = profile[:,0,:,:]
         rho_bar = profile[:,1,:,:]

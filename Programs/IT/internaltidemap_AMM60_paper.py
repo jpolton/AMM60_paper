@@ -15,14 +15,30 @@ import datetime
 import os # Note sure I use this
 import glob # For getting file paths
 import copy # For deep copying variables
-from AMM60_tools import getNEMObathydepth
-from AMM60_tools import NEMO_fancy_datestr
-from AMM60_tools import doodsonX0
+from amm60_data_tools import NEMO_fancy_datestr # convert NEMO time 
+from amm60_data_tools import delta_diagnose # compute pycnocline depth and variance
 
 import matplotlib.pyplot as plt  # plotting
 %matplotlib inline
 
 
+##############################################################################
+# Check host name and username
+import socket
+hostname = socket.gethostname()
+
+import getpass
+username = getpass.getuser()
+
+if 'livmaf' in hostname and username in ['jeff','jelt']:
+    dirroot = '/Volumes'
+    speedflag = True # only load in one file
+elif 'livljobs' in hostname and username in ['jeff','jelt']:
+    dirroot = ''
+    speedflag = True # only load in one file
+else:
+    dirroot = ''
+    speedflag = False
 
 ##############################################################################
 # Define functions for plotting multi subplot figure 
@@ -57,7 +73,7 @@ def plotit_sub(x,y,var,label,clim,s_subplot):
     plt.ylim([+45,+63])
     plt.xlim([-14,+14])
     plt.title(label)
-    
+
 
 
 
@@ -65,8 +81,8 @@ def plotit_sub(x,y,var,label,clim,s_subplot):
 ##############################################################################
 # Set stuff up
 ##############################################################################
-dirnameK = '/projectsa/FASTNEt/kariho40/AMM60/RUNS/2010_2013/IT/' # 2010 diagnostics
-dirname = '/projectsa/FASTNEt/jelt/AMM60/RUNS/2010_2013/IT/' # 2012 diagnostics
+dirnameK = dirroot+'/projectsa/FASTNEt/kariho40/AMM60/RUNS/2010_2013/IT/' # 2010 diagnostics
+dirname = dirroot+'/projectsa/FASTNEt/jelt/AMM60/RUNS/2010_2013/IT/' # 2012 diagnostics
 region = 'Celtic'
 #region = 'Malin'
 #region = 'NSea'
@@ -96,7 +112,7 @@ print 'Diagnostics are calculated over the upper 200m'
 ## Load in static files: bathymetry and nlev data
 # the actual bathymetry (not the stuff that gets clipped at 200m)
 ##############################################################################
-b = Dataset('/projectsa/FASTNEt/kariho40/AMM60/BATHY/GEBCO2014/BATHY_NOSMOOTH/bathyfile_AMM60.nc')
+b = Dataset(dirroot+'/projectsa/FASTNEt/kariho40/AMM60/BATHY/GEBCO2014/BATHY_NOSMOOTH/bathyfile_AMM60.nc')
 
 bathy = b.variables['Bathymetry'][:] # (y, x)
 #load lat and lon
@@ -112,8 +128,8 @@ if data_flag == '200m':
 g.close()
 
 print 'np.shape(blat): ',np.shape(blat)
-    
-    
+
+
 
 ##############################################################################
 # Find all the files and loop over them
@@ -127,7 +143,11 @@ time_counter = []
 H = []
 first = True
 
-filenames = glob.glob(dirname+'AMM60_1h_2012????_2012????_diagIT_grid_T.nc')
+if speedflag == True:
+    filenames = glob.glob(dirname+'AMM60_1h_2012????_201208??_diagIT_grid_T.nc')
+    print 'fix to only read in one file on laptop'
+else:
+    filenames = glob.glob(dirname+'AMM60_1h_2012????_2012????_diagIT_grid_T.nc')
 
 for fullfilepath in filenames:
 
@@ -164,7 +184,7 @@ for fullfilepath in filenames:
     f.close() # close the netcdf mooring file
 
 
-    
+
     # Bundle all the data along the time axis
     #########################################
     if (first):
@@ -181,8 +201,8 @@ for fullfilepath in filenames:
         rho_bot      = np.append(rho_bot, f_rho_bot, axis=0)
         rho_bar      = np.append(rho_bar, f_rho_bar, axis=0)
 
-        
-        
+
+
 # Load is SSH data for ST4
 ##########################
 #fullfilepath1 = '/projectsa/FASTNEt/kariho40/AMM60/RUNS/D376/AMM60_1h_20120504_20120610_fastnet_ST4_grid_T.nc'
@@ -190,8 +210,8 @@ for fullfilepath in filenames:
 
 # Though these files are from a different simulation they overlay the common periods very well, though not perfectly.
 # It is good enough for these purposes which are visual.
-fullfilepath1 = '/projectsa/FASTNEt/kariho40/AMM60/RUNS/2010_2013/NO_DIFF/AMM60_1h_20120421_20120619_fastnet_ST4_grid_T.nc'
-fullfilepath2 = '/projectsa/FASTNEt/kariho40/AMM60/RUNS/2010_2013/NO_DIFF/AMM60_1h_20120620_20120818_fastnet_ST4_grid_T.nc'
+fullfilepath1 = dirroot+'/projectsa/FASTNEt/kariho40/AMM60/RUNS/2010_2013/NO_DIFF/AMM60_1h_20120421_20120619_fastnet_ST4_grid_T.nc'
+fullfilepath2 = dirroot+'/projectsa/FASTNEt/kariho40/AMM60/RUNS/2010_2013/NO_DIFF/AMM60_1h_20120620_20120818_fastnet_ST4_grid_T.nc'
 
 
 f = Dataset(fullfilepath1)
@@ -216,18 +236,21 @@ depth_ST4 = depth_ST4 - np.mean(depth_ST4, axis = 0)
 print 'Process data'
 print '############'
 
-# Process the time data
+
+# Stack rho data into a 3 layer profile
+profile = rho_top[:,np.newaxis,:,:]
+profile = np.append(profile, rho_bar[:,np.newaxis,:,:], axis=1)
+profile = np.append(profile, rho_bot[:,np.newaxis,:,:], axis=1)
+
+## Compute delta and variance properties
+#################################
+max_depth = 0 # not used for 3D profiles
+[delta, delta_nt, internal_tide_map, time_datetime,  pycn_depth_map_3day, internal_tide_map_3day, time_datetime_3day, time_counter_3day] = delta_diagnose( profile, time_counter, H, max_depth )
+
+# Process the SSH time data
 ################################
 # Note that the Error flag doesn't work and I haven't actually checked it. What happens with leap years etc...
-[time_str,     time_datetime,     flag_err] = NEMO_fancy_datestr( time_counter,     time_origin ) # internal tide data
 [time_str_ST4, time_datetime_ST4, flag_err] = NEMO_fancy_datestr( time_counter_ST4, time_origin ) # SSH data
-
-
-
-## Compute delta
-################################
-delta={};
-delta = H*( rho_bot - rho_bar) / (rho_top - rho_bot)
 
 ## Compute stratification
 ################################
@@ -260,47 +283,6 @@ mask = mask_land*mask_200m*mask_corners # Ones and zeros, wet domain mask
 mean_strat = np.mean( strat ,axis=0)
 mask_strat = ( mean_strat >= -2E-3 ).astype(int)*(-999)   # Good vals: 0 / bad vals: -999. Plus mask_strat to variable when plotting.
 #mask_strat = ma.masked_where(np.mean( strat ,axis=0) >= -2E-3, np.ones((ny,nx)))
-
-
-
-# Tidally filter pycnocline depth with Doodson filter
-################################
-# Tile the delta to increase the timeseries length if it is less than the Doodson filter length.
-if np.shape(delta)[0] < 19*2+1:
-    delta = np.tile(delta, (2,1,1));
-    print 'time series too short to do Doodson filter - tiled in time'
-
-## Apply DoodsonX0 filter
-# For this function the time is assumed to be hourly
-delta_nt = doodsonX0(time_counter,delta);
-
-
-## Define the internal tide variance
-################################
-internal_tide_map = np.nanvar(delta - delta_nt, axis = 0)
-## Define the pycnocline depth
-pycn_depth_map = np.nanmean(abs(delta_nt), axis = 0)
-## Define a potential energy of the pycnocline disturbance
-#pe = 0.5 * 9.81 * np.mean((rho_top - rho_bed) * ( internal_tide_map**2 / H ), axis=0)
-
-#for (x, y), element in np.ndenumerate(nav_lat):
-#    print(x, y, internal_tide_map[x,y], pycn_depth_map[x,y], np.mean(H[:,x,y],axis=0), nav_lat[x,y],nav_lon[x,y])
-
-
-## Define the internal tide variance in 3 day chunks
-####################################################
-i = 0
-internal_tide_map_3day = np.zeros((nt/(24*3), ny,nx))
-pycn_depth_map_3day    = np.zeros((nt/(24*3), ny,nx))
-time_counter_3day      = np.zeros((nt/(24*3), 3*24))
-while ((3*i+3)*24 < nt): 
-        internal_tide_map_3day[i,:,:] = np.nanvar(delta[3*i*24:(3*i+3)*24,:,:]  - delta_nt[3*i*24:(3*i+3)*24,:,:], axis = 0)
-        pycn_depth_map_3day[i,:,:]    = np.nanmean( abs(delta_nt[3*i*24:(3*i+3)*24,:,:]), axis = 0)
-        time_counter_3day[i,:] = time_counter[3*i*24:(3*i+3)*24]
-        i += 1
-        print 'Chunking pycnocline data: ',i,' of ',(nt/24)/3
-
-
 
 
 
@@ -364,8 +346,8 @@ plt.suptitle(filename)
 var = np.mean(H,axis=0)*mask_land*mask_200m
 clim = [np.nanpercentile(var, 5), np.nanpercentile(var, 95)]
 #print 'subplot 1: percentile range:',clim
-plotit_sub(nav_lon,nav_lat,var,'Analysis depth range (m)','221')
-plt.clim(clim)
+plotit_sub(nav_lon,nav_lat,var,'Analysis depth range (m)',clim,'221')
+#plt.clim(clim)
 #plt.contour(nav_lon,nav_lat,depth[0,:,:]*mask_shelf, [100,200])
 
 ## pycnocline depth
@@ -373,11 +355,11 @@ plt.clim(clim)
 #var = pycn_depth_map
 var = delta[0,:,:]*mask_land*mask_200m # *mask_strat
 var[var>=200]=np.nan
-clim = [-50, -10]
+clim = [10, 50]
 #clim = [np.nanpercentile(var, 5), np.nanpercentile(var, 95)]
 #print 'subplot 2: percentile range:',clim
-plotit_sub(nav_lon,nav_lat,var+mask_strat,'pycnocline depth (m)','222')
-plt.clim(clim)
+plotit_sub(nav_lon,nav_lat,var+mask_strat,'pycnocline depth (m)',clim,'222')
+#plt.clim(clim)
 #plt.contour(nav_lon,nav_lat,H[0,:,:]*mask_shelf, [100,200])
 
 
@@ -388,8 +370,8 @@ var = np.mean( -strat ,axis=0)*mask_land*mask_200m #*(mask_strat*mask_strat)
 clim = [0, 0.02]
 #clim = [0, np.nanpercentile(var, 95)]
 #print 'subplot 4: percentile range:',clim
-plotit_sub(nav_lon,nav_lat,var+mask_strat,'-mean bulk stratification (kg/m^4)','223')
-plt.clim(clim)
+plotit_sub(nav_lon,nav_lat,var+mask_strat,'-mean bulk stratification (kg/m^4)',clim,'223')
+#plt.clim(clim)
 
 
 ## pycnocline depth variance
@@ -398,8 +380,8 @@ var = np.log10(internal_tide_map*mask_land*mask_200m) #*mask_strat)
 clim = [0., 2.6]
 #clim = [np.nanpercentile(var, 1), np.nanpercentile(var, 99)]
 #print 'subplot 3: percentile range:',clim
-plotit_sub(nav_lon,nav_lat,var+mask_strat,'log10[pycnocline depth variance (m)]','224')
-plt.clim(clim)
+plotit_sub(nav_lon,nav_lat,var+mask_strat,'log10[pycnocline depth variance (m)]',clim,'224')
+#plt.clim(clim)
 
 
 
@@ -478,5 +460,5 @@ for i in range(nt/(24*3)):
 
     ## Save output
     ###############################
-    fname = '/scratch/jelt/tmp/internaltidemap'+str(i).zfill(3)+'_IT_stats.png'
+    fname = dirroot+'/scratch/jelt/tmp/internaltidemap'+str(i).zfill(3)+'_IT_stats.png'
     plt.savefig(fname)
