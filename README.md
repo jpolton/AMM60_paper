@@ -14,7 +14,7 @@ Fixed `internaltidemap_AMM60_paper.ipynb` and `pycnocline_mod_obs_virtual_moorin
 `internaltidemap_AMM60_paper.ipynb`:
 Update to do running mean averaging rather than 3 day chunking
 
-`pycnocline_mod_obs_virtual\_mooring.ipynb`:
+`pycnocline_mod_obs_virtual_mooring.ipynb`:
 Update to do running mean averaging rather than 3 day chunking
 Export to py file
 
