@@ -333,10 +333,12 @@ def getNEMObathydepth(lat0,lon0, filename='/Users/jeff/DATA/anyTide/NEMO/bathy_f
 def delta_diagnose( profile, time_counter, depth, max_depth ):
     """ 
     INPUT:
-    profile data
+    profile data (1D: z-t, or 3D: z-t-y-x)
     time_counter - seconds since 1950
-    depth - metres (+ve) from the surface (z=0)
-    max_depth - depth overwhich integral is calculated
+    depth - metres (+ve) from the surface (z=0). 
+        1D profile data: depth(z) is independant of time.
+        3D profile data: depth(t,y,x) is bathymetric depth.
+    max_depth - depth overwhich integral is calculated (only used for 1d profile data)
     
     OUTPUT:
     pycnocline depth (m) - instantaneous
@@ -359,28 +361,58 @@ def delta_diagnose( profile, time_counter, depth, max_depth ):
     # Assume time counter data is relative to 1950 and in seconds
     time_origin = '1950-01-01 00:00:00'
 
-
-    # Compute thermocline depth as first moment of stratification
-    [nz,nt] = np.shape(profile) 
+    ## Compute delta
+    ################################
+    # Profile data can be 1d or 3d. Check here
+    ndims = len(np.shape(profile))
     
-    # Find the index for the shallowest of 200m or bed
-    index_bed = np.sum(np.isfinite(profile), axis = 0, dtype='int')-1 # Sum over depth. Returns number of finite levels per timestep
-    index_200m = np.tile(np.argmin( abs(depth - max_depth)), nt)
-    index = [ min([nz-2, index_200m[k], index_bed[k]]) for k in range(nt)] # nz-2 avoids dz being computed with levels that don't exist
-    temp_bot = np.zeros(nt) # the temperature at min(depth,200m)
-    temp_bot[:] = [profile[index[mm], mm] for mm in range(nt)]
+    if ndims == 2: # i.e. function of depth and time only, need to extract top bottom and mean profile quantities to make delta.
+    
+        # Compute thermocline depth as first moment of stratification
+        [nz,nt] = np.shape(profile) 
 
-    dz = np.zeros((nz,nt))
-    temp_bar = np.zeros((nt))
-    for m in range(nt):
-        for k in range(index[m]):
-            dz[k+1,m] = depth[k+1] - depth[k] # depth and dz are POSITIVE. k=0 is surface layer                
-        temp_bar[m] = np.nansum( dz[:,m] * profile[:,m] ) / ( depth[index[m]] )
+        # Find the index for the shallowest of 200m or bed
+        index_bed = np.sum(np.isfinite(profile), axis = 0, dtype='int')-1 # Sum over depth. Returns number of finite levels per timestep
+        index_200m = np.tile(np.argmin( abs(depth - max_depth)), nt)
+        index = [ min([nz-2, index_200m[k], index_bed[k]]) for k in range(nt)] # nz-2 avoids dz being computed with levels that don't exist
+        temp_bot = np.zeros(nt) # the temperature at min(depth,200m)
+        temp_bot[:] = [profile[index[mm], mm] for mm in range(nt)]
 
-    temp_top = np.zeros(nt)
-    temp_top[:] = profile[0, :]
-    delta = depth[index] * (temp_bot - temp_bar) / (temp_top - temp_bot)
-    delta = -np.tile(delta, (1,1,1)).T # DoodsonX0 expects a (time, y, x) array 
+        dz = np.zeros((nz,nt))
+        temp_bar = np.zeros((nt))
+        for m in range(nt):
+            for k in range(index[m]):
+                dz[k+1,m] = depth[k+1] - depth[k] # depth and dz are POSITIVE. k=0 is surface layer                
+            temp_bar[m] = np.nansum( dz[:,m] * profile[:,m] ) / ( depth[index[m]] )
+
+        temp_top = np.zeros(nt)
+        temp_top[:] = profile[0, :]
+        
+        ## Compute delta. 1D. 
+        # depth is constant, temp values vary in time
+        ################################
+        delta = depth[index] * (temp_bot - temp_bar) / (temp_top - temp_bot)
+        delta = np.abs(np.tile(delta, (1,1,1)).T) # DoodsonX0 expects a (time, y, x) array 
+    
+    if ndims == 4: # i.e. function of depth, time, y, x. Need to unpack top, mean, bottom quantities to make delta
+    
+        rho_top = profile[:,0,:,:]
+        rho_bar = profile[:,1,:,:]
+        rho_bot = profile[:,2,:,:]
+        
+        ## Compute delta. 3D.
+        # depth(t,y,x), rho*(t,y,x)
+        ################################
+        delta={};
+        delta = np.abs(depth*( rho_bot - rho_bar) / (rho_top - rho_bot))
+    
+    else:
+        print "Am not ready for data with these dimensions"
+        return
+    
+    
+#    delta = depth[index] * (temp_bot - temp_bar) / (temp_top - temp_bot)
+#    delta = np.abs(np.tile(delta, (1,1,1)).T) # DoodsonX0 expects a (time, y, x) array 
     
     # Expect time data in seconds
     if min( time_counter[1:] - time_counter[0:-1]) < 59: 
@@ -415,10 +447,10 @@ def delta_diagnose( profile, time_counter, depth, max_depth ):
 
     ## Define the internal tide variance in 3 day chunks
     ####################################################
-    [nz,nt] = np.shape(profile) # temp_mod and temp_obs are same size
+    [nt,ny,nx] = np.shape(delta) # ny=nx=1 for 1d profiles
     i = 0
-    internal_tide_map_3day = np.zeros((int(nt/(24*3)), 1,1))
-    pycn_depth_map_3day    = np.zeros((int(nt/(24*3)), 1,1))
+    internal_tide_map_3day = np.zeros((int(nt/(24*3)), ny,nx))
+    pycn_depth_map_3day    = np.zeros((int(nt/(24*3)), ny,nx))
     time_counter_3day      = np.zeros((int(nt/(24*3)), 3*24))
     time_datetime_3day  = np.array([datetime.datetime(1900,1,1) for loop in xrange(int(nt/(24*3)))]) # dummy datetime array
     #print time_datetime_3day[jj][ii]
