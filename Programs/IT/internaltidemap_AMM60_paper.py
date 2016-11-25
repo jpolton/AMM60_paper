@@ -15,14 +15,28 @@ import datetime
 import os # Note sure I use this
 import glob # For getting file paths
 import copy # For deep copying variables
-from AMM60_tools import getNEMObathydepth
-from AMM60_tools import NEMO_fancy_datestr
-from AMM60_tools import doodsonX0
+from amm60_data_tools import getNEMObathydepth
+from amm60_data_tools import NEMO_fancy_datestr
+from amm60_data_tools import doodsonX0
 
 import matplotlib.pyplot as plt  # plotting
 %matplotlib inline
 
 
+##############################################################################
+# Check host name and username
+import socket
+hostname = socket.gethostname()
+
+import getpass
+username = getpass.getuser()
+
+if 'livmaf' in hostname and username in ['jeff','jelt']:
+    dirroot = '/Volumes'
+    speedflag = True # only load in one file
+else:
+    dirroot = ''
+    speedflag = False
 
 ##############################################################################
 # Define functions for plotting multi subplot figure 
@@ -65,8 +79,8 @@ def plotit_sub(x,y,var,label,clim,s_subplot):
 ##############################################################################
 # Set stuff up
 ##############################################################################
-dirnameK = '/projectsa/FASTNEt/kariho40/AMM60/RUNS/2010_2013/IT/' # 2010 diagnostics
-dirname = '/projectsa/FASTNEt/jelt/AMM60/RUNS/2010_2013/IT/' # 2012 diagnostics
+dirnameK = dirroot+'/projectsa/FASTNEt/kariho40/AMM60/RUNS/2010_2013/IT/' # 2010 diagnostics
+dirname = dirroot+'/projectsa/FASTNEt/jelt/AMM60/RUNS/2010_2013/IT/' # 2012 diagnostics
 region = 'Celtic'
 #region = 'Malin'
 #region = 'NSea'
@@ -96,7 +110,7 @@ print 'Diagnostics are calculated over the upper 200m'
 ## Load in static files: bathymetry and nlev data
 # the actual bathymetry (not the stuff that gets clipped at 200m)
 ##############################################################################
-b = Dataset('/projectsa/FASTNEt/kariho40/AMM60/BATHY/GEBCO2014/BATHY_NOSMOOTH/bathyfile_AMM60.nc')
+b = Dataset(dirroot+'/projectsa/FASTNEt/kariho40/AMM60/BATHY/GEBCO2014/BATHY_NOSMOOTH/bathyfile_AMM60.nc')
 
 bathy = b.variables['Bathymetry'][:] # (y, x)
 #load lat and lon
@@ -127,7 +141,11 @@ time_counter = []
 H = []
 first = True
 
-filenames = glob.glob(dirname+'AMM60_1h_2012????_2012????_diagIT_grid_T.nc')
+if speedflag == True:
+    filenames = glob.glob(dirname+'AMM60_1h_2012????_201208??_diagIT_grid_T.nc')
+    print 'fix to only read in one file on laptop'
+else:
+    filenames = glob.glob(dirname+'AMM60_1h_2012????_2012????_diagIT_grid_T.nc')
 
 for fullfilepath in filenames:
 
@@ -190,8 +208,8 @@ for fullfilepath in filenames:
 
 # Though these files are from a different simulation they overlay the common periods very well, though not perfectly.
 # It is good enough for these purposes which are visual.
-fullfilepath1 = '/projectsa/FASTNEt/kariho40/AMM60/RUNS/2010_2013/NO_DIFF/AMM60_1h_20120421_20120619_fastnet_ST4_grid_T.nc'
-fullfilepath2 = '/projectsa/FASTNEt/kariho40/AMM60/RUNS/2010_2013/NO_DIFF/AMM60_1h_20120620_20120818_fastnet_ST4_grid_T.nc'
+fullfilepath1 = dirroot+'/projectsa/FASTNEt/kariho40/AMM60/RUNS/2010_2013/NO_DIFF/AMM60_1h_20120421_20120619_fastnet_ST4_grid_T.nc'
+fullfilepath2 = dirroot+'/projectsa/FASTNEt/kariho40/AMM60/RUNS/2010_2013/NO_DIFF/AMM60_1h_20120620_20120818_fastnet_ST4_grid_T.nc'
 
 
 f = Dataset(fullfilepath1)
@@ -364,8 +382,8 @@ plt.suptitle(filename)
 var = np.mean(H,axis=0)*mask_land*mask_200m
 clim = [np.nanpercentile(var, 5), np.nanpercentile(var, 95)]
 #print 'subplot 1: percentile range:',clim
-plotit_sub(nav_lon,nav_lat,var,'Analysis depth range (m)','221')
-plt.clim(clim)
+plotit_sub(nav_lon,nav_lat,var,'Analysis depth range (m)',clim,'221')
+#plt.clim(clim)
 #plt.contour(nav_lon,nav_lat,depth[0,:,:]*mask_shelf, [100,200])
 
 ## pycnocline depth
@@ -376,8 +394,8 @@ var[var>=200]=np.nan
 clim = [-50, -10]
 #clim = [np.nanpercentile(var, 5), np.nanpercentile(var, 95)]
 #print 'subplot 2: percentile range:',clim
-plotit_sub(nav_lon,nav_lat,var+mask_strat,'pycnocline depth (m)','222')
-plt.clim(clim)
+plotit_sub(nav_lon,nav_lat,var+mask_strat,'pycnocline depth (m)',clim,'222')
+#plt.clim(clim)
 #plt.contour(nav_lon,nav_lat,H[0,:,:]*mask_shelf, [100,200])
 
 
@@ -388,8 +406,8 @@ var = np.mean( -strat ,axis=0)*mask_land*mask_200m #*(mask_strat*mask_strat)
 clim = [0, 0.02]
 #clim = [0, np.nanpercentile(var, 95)]
 #print 'subplot 4: percentile range:',clim
-plotit_sub(nav_lon,nav_lat,var+mask_strat,'-mean bulk stratification (kg/m^4)','223')
-plt.clim(clim)
+plotit_sub(nav_lon,nav_lat,var+mask_strat,'-mean bulk stratification (kg/m^4)',clim,'223')
+#plt.clim(clim)
 
 
 ## pycnocline depth variance
@@ -398,8 +416,8 @@ var = np.log10(internal_tide_map*mask_land*mask_200m) #*mask_strat)
 clim = [0., 2.6]
 #clim = [np.nanpercentile(var, 1), np.nanpercentile(var, 99)]
 #print 'subplot 3: percentile range:',clim
-plotit_sub(nav_lon,nav_lat,var+mask_strat,'log10[pycnocline depth variance (m)]','224')
-plt.clim(clim)
+plotit_sub(nav_lon,nav_lat,var+mask_strat,'log10[pycnocline depth variance (m)]',clim,'224')
+#plt.clim(clim)
 
 
 
@@ -478,5 +496,5 @@ for i in range(nt/(24*3)):
 
     ## Save output
     ###############################
-    fname = '/scratch/jelt/tmp/internaltidemap'+str(i).zfill(3)+'_IT_stats.png'
+    fname = dirroot+'/scratch/jelt/tmp/internaltidemap'+str(i).zfill(3)+'_IT_stats.png'
     plt.savefig(fname)
