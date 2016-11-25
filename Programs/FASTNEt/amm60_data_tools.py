@@ -6,6 +6,8 @@ Collection of functions to process AMM60 and obs data.
 Created on Fri 4 Dec 2015
 
 @author: jeff
+Changelog:
+25 Nov 16: diagnose_delta - process 3D or 1D spatial data
 """
 import numpy as np
 #import matplotlib.pyplot as plt
@@ -348,7 +350,8 @@ def delta_diagnose( profile, time_counter, depth, max_depth ):
     
     pycnocline depth (m) - running window processed
     pycnocline variance (m^2) - running window processed
-    time in python datetime speak - running window processed 
+    time in python datetime speak - running window processed
+    time counter (2d):  running window bin index, times in window
 
     Note. Initially since my running windows are actually 3 day chunks running window time will be different to instantaneous time
     When running window analysis works, these two time products should be the same.
@@ -356,7 +359,9 @@ def delta_diagnose( profile, time_counter, depth, max_depth ):
     Assume the time_counter is in seconds since 1950 as is usual, not days since 1950.
     
     Usage:
-    [delta, delta_nt, delta_var, time_datetime,  delta_runwin, delta_var_runwin, time_datetime_runwin] = delta_diagnose( profile, time_counter, depth, max_depth )
+    [delta, delta_nt, delta_var, time_datetime,  delta_runwin, delta_var_runwin, time_datetime_runwin, time_counter_runwin] = delta_diagnose( profile, time_counter, depth, max_depth )
+    e.g. internaltidemap_AMM60_paper.py
+    e.g. pycnocline_mod_obs_virtual_moorings.ipynb
     """
     # Assume time counter data is relative to 1950 and in seconds
     time_origin = '1950-01-01 00:00:00'
@@ -394,7 +399,7 @@ def delta_diagnose( profile, time_counter, depth, max_depth ):
         delta = depth[index] * (temp_bot - temp_bar) / (temp_top - temp_bot)
         delta = np.abs(np.tile(delta, (1,1,1)).T) # DoodsonX0 expects a (time, y, x) array 
     
-    if ndims == 4: # i.e. function of depth, time, y, x. Need to unpack top, mean, bottom quantities to make delta
+    elif ndims == 4: # i.e. function of depth, time, y, x. Need to unpack top, mean, bottom quantities to make delta
     
         rho_top = profile[:,0,:,:]
         rho_bar = profile[:,1,:,:]
@@ -470,11 +475,13 @@ def delta_diagnose( profile, time_counter, depth, max_depth ):
     delta_runwin = np.squeeze(pycn_depth_map_3day)
     delta_var_runwin = np.squeeze(internal_tide_map_3day)
     time_datetime_runwin = np.squeeze(time_datetime_3day)
+    time_counter_runwin = np.squeeze(time_counter_3day)
     delta=np.squeeze(delta)
     delta_nt=np.squeeze(delta_nt)
 
-
-    return [delta, delta_nt, delta_var, time_datetime,  delta_runwin, delta_var_runwin, time_datetime_runwin]
+    print 'WARNING: jeff added a new output field: time_counter_runwin'
+    
+    return [delta, delta_nt, delta_var, time_datetime,  delta_runwin, delta_var_runwin, time_datetime_runwin, time_counter_runwin]
 
 def readMODELnc(filename, var):
     """ 
