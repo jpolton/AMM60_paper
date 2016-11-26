@@ -454,22 +454,24 @@ def delta_diagnose( profile, time_counter, depth, max_depth ):
     Convert 3 day chunking into moving 3 day window. Size of new variables will be nt - 2*(half window)
     """
     [nt,ny,nx] = np.shape(delta) # ny=nx=1 for 1d profiles
-    chunkedsize = int(nt/(24*3)) # 3 day chunking
+    winsiz = 3*24 # Window Size (in pts) for chuncking operation. (Data is prob every hour)
+    chunkedsize = int(nt/winsiz) # 3 day chunking. Number of time stamps in chunked data
+    
     ## Define the internal tide variance in 3 day chunks
     ####################################################
     [nt,ny,nx] = np.shape(delta) # ny=nx=1 for 1d profiles
-    i = 0
+    i = 0 # initialise counter
     internal_tide_map_3day = np.zeros((chunkedsize, ny,nx))
     pycn_depth_map_3day    = np.zeros((chunkedsize, ny,nx))
-    time_counter_3day      = np.zeros((chunkedsize, 3*24))
+    time_counter_3day      = np.zeros((chunkedsize, winsiz))
     time_datetime_3day  = np.array([datetime.datetime(1900,1,1) for loop in xrange(chunkedsize)]) # dummy datetime array
     #print time_datetime_3day[jj][ii]
 #    while ((3*i+3)*24 <= nt):
-    while (i <= chunkedsize):
-            internal_tide_map_3day[i,:,:] = np.nanvar(delta[3*i*24:(3*i+3)*24,:,:]  - delta_nt[3*i*24:(3*i+3)*24,:,:], axis = 0)
-            pycn_depth_map_3day[i,:,:]    = np.nanmean( abs(delta_nt[3*i*24:(3*i+3)*24,:,:]), axis = 0)
-            time_counter_3day[i,:] = time_counter[3*i*24:(3*i+3)*24]
-            time_datetime_3day[i] = time_datetime[int(3*i*24 + 3*24 // 2)] # store middle times
+    while (i < chunkedsize):
+            internal_tide_map_3day[i,:,:] = np.nanvar(delta[i*winsiz:(i+1)*winsiz,:,:]  - delta_nt[i*winsiz:(i+1)*winsiz,:,:], axis = 0)
+            pycn_depth_map_3day[i,:,:]    = np.nanmean( abs(delta_nt[i*winsiz:(i+1)*winsiz,:,:]), axis = 0)
+            time_counter_3day[i,:] = time_counter[i*winsiz:(i+1)*winsiz]
+            time_datetime_3day[i] = time_datetime[int(i*winsiz + winsiz // 2)] # store middle times
             #print time_datetime[jj][ii][int(3*i*24 + 3*12)]
             #print time_datetime_3day[jj][ii][i]
             i += 1
