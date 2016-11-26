@@ -20,3 +20,9 @@ Export to py file
 
 `diagnose_delta from amm60_data_tools.py`:
 Update to do running mean averaging rather than 3 day chunking
+
+---
+**26 Nov**
+
+* Check `pycnocline_mod_obs_virtual_mooring.ipynb` works
+* start edit `diagnose_delta from amm60_data_tools.py`, for running mean

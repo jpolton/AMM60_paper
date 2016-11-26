@@ -450,16 +450,22 @@ def delta_diagnose( profile, time_counter, depth, max_depth ):
     pycn_depth_map = np.nanmean(abs(delta_nt), axis = 0)
 
 
+    """
+    Convert 3 day chunking into moving 3 day window. Size of new variables will be nt - 2*(half window)
+    """
+    [nt,ny,nx] = np.shape(delta) # ny=nx=1 for 1d profiles
+    chunkedsize = int(nt/(24*3)) # 3 day chunking
     ## Define the internal tide variance in 3 day chunks
     ####################################################
     [nt,ny,nx] = np.shape(delta) # ny=nx=1 for 1d profiles
     i = 0
-    internal_tide_map_3day = np.zeros((int(nt/(24*3)), ny,nx))
-    pycn_depth_map_3day    = np.zeros((int(nt/(24*3)), ny,nx))
-    time_counter_3day      = np.zeros((int(nt/(24*3)), 3*24))
-    time_datetime_3day  = np.array([datetime.datetime(1900,1,1) for loop in xrange(int(nt/(24*3)))]) # dummy datetime array
+    internal_tide_map_3day = np.zeros((chunkedsize, ny,nx))
+    pycn_depth_map_3day    = np.zeros((chunkedsize, ny,nx))
+    time_counter_3day      = np.zeros((chunkedsize, 3*24))
+    time_datetime_3day  = np.array([datetime.datetime(1900,1,1) for loop in xrange(chunkedsize)]) # dummy datetime array
     #print time_datetime_3day[jj][ii]
-    while ((3*i+3)*24 <= nt):
+#    while ((3*i+3)*24 <= nt):
+    while (i <= chunkedsize):
             internal_tide_map_3day[i,:,:] = np.nanvar(delta[3*i*24:(3*i+3)*24,:,:]  - delta_nt[3*i*24:(3*i+3)*24,:,:], axis = 0)
             pycn_depth_map_3day[i,:,:]    = np.nanmean( abs(delta_nt[3*i*24:(3*i+3)*24,:,:]), axis = 0)
             time_counter_3day[i,:] = time_counter[3*i*24:(3*i+3)*24]
