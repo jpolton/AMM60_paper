@@ -454,22 +454,40 @@ def delta_diagnose( profile, time_counter, depth, max_depth ):
     Convert 3 day chunking into moving 3 day window. Size of new variables will be nt - 2*(half window)
     """
     [nt,ny,nx] = np.shape(delta) # ny=nx=1 for 1d profiles
-    winsiz = 3*24 # Window Size (in pts) for chuncking operation. (Data is prob every hour)
-    chunkedsize = int(nt/winsiz) # 3 day chunking. Number of time stamps in chunked data
     
     ## Define the internal tide variance in 3 day chunks
     ####################################################
     i = 0 # initialise counter
-    internal_tide_map_3day = np.zeros((chunkedsize, ny,nx))
-    pycn_depth_map_3day    = np.zeros((chunkedsize, ny,nx))
-    time_counter_3day      = np.zeros((chunkedsize, winsiz))
-    time_datetime_3day  = np.array([datetime.datetime(1900,1,1) for loop in xrange(chunkedsize)]) # dummy datetime array
-    while (i < chunkedsize):
-        internal_tide_map_3day[i,:,:] = np.nanvar(delta[i*winsiz:(i+1)*winsiz,:,:]  - delta_nt[i*winsiz:(i+1)*winsiz,:,:], axis = 0)
-        pycn_depth_map_3day[i,:,:]    = np.nanmean( abs(delta_nt[i*winsiz:(i+1)*winsiz,:,:]), axis = 0)
-        time_counter_3day[i,:] = time_counter[i*winsiz:(i+1)*winsiz]
-        time_datetime_3day[i] = time_datetime[int(i*winsiz + winsiz // 2)] # store middle times
-        i += 1
+    if(1):  # New chunking
+        """
+        i-int(np.floor(winsiz/2))  : i+int(np.ceil(winsiz/2))  
+        """
+        winsiz = 3*24 # Window Size (in pts) for chuncking operation. (Data is prob every hour)
+        chunkedsize = nt - 2*( winsiz // 2 ) # 3 day chunking. Number of time stamps in chunked data
+        internal_tide_map_3day = np.zeros((chunkedsize, ny,nx))
+        pycn_depth_map_3day    = np.zeros((chunkedsize, ny,nx))
+        time_counter_3day      = np.zeros((chunkedsize, winsiz))
+        time_datetime_3day  = np.array([datetime.datetime(1900,1,1) for loop in xrange(chunkedsize)]) # dummy datetime array
+        while (i < chunkedsize):
+            internal_tide_map_3day[i,:,:] = np.nanvar(delta[i*winsiz:(i+1)*winsiz,:,:]  - delta_nt[i*winsiz:(i+1)*winsiz,:,:], axis = 0)
+            pycn_depth_map_3day[i,:,:]    = np.nanmean( abs(delta_nt[i*winsiz:(i+1)*winsiz,:,:]), axis = 0)
+            time_counter_3day[i,:] = time_counter[i*winsiz:(i+1)*winsiz]
+            time_datetime_3day[i] = time_datetime[int(i*winsiz + winsiz // 2)] # store middle times
+            i += 1
+
+    if(0):   # Old chunking  
+        winsiz = 3*24 # Window Size (in pts) for chuncking operation. (Data is prob every hour)
+        chunkedsize = int(nt/winsiz) # 3 day chunking. Number of time stamps in chunked data
+        internal_tide_map_3day = np.zeros((chunkedsize, ny,nx))
+        pycn_depth_map_3day    = np.zeros((chunkedsize, ny,nx))
+        time_counter_3day      = np.zeros((chunkedsize, winsiz))
+        time_datetime_3day  = np.array([datetime.datetime(1900,1,1) for loop in xrange(chunkedsize)]) # dummy datetime array
+        while (i < chunkedsize):
+            internal_tide_map_3day[i,:,:] = np.nanvar(delta[i*winsiz:(i+1)*winsiz,:,:]  - delta_nt[i*winsiz:(i+1)*winsiz,:,:], axis = 0)
+            pycn_depth_map_3day[i,:,:]    = np.nanmean( abs(delta_nt[i*winsiz:(i+1)*winsiz,:,:]), axis = 0)
+            time_counter_3day[i,:] = time_counter[i*winsiz:(i+1)*winsiz]
+            time_datetime_3day[i] = time_datetime[int(i*winsiz + winsiz // 2)] # store middle times
+            i += 1
 
     print 'Chunking done.'
     # Do some relabelling for new notation that I want to implement in the above
