@@ -19,14 +19,18 @@ Fixed `internaltidemap_AMM60_paper.ipynb` and `pycnocline_mod_obs_virtual_moorin
 * Implement data clipping in `pycnocline_mod_obs_virtual_mooring.ipynb` for pycnocline diagnostics that were computed outside the range that the Doodson filter gave values for no-tide. Note, however, since the running window is computer over +/- 1.5 day window, the first 1.5 days from the first delta_nt will not have from 1.5 increasing to the 3 days of data in the analysis.
 
 ---
+**27 Nov**
+
+* Relabel `pycnocline_mod_obs_virtual_mooring.ipynb` --> `pycnocline_virtual_mooring.ipynb`
+* Create paper ready figure for by pycnocline depth and std diagnostics map onto observational T(z,t).
+* Create paper ready figure for intercomparison between pycnocline depth and std for all configuration+obs at all FASTNEt locations.
+* Shift core code to python file: `pycnocline_virtual_mooring.py`
+
+---
 **To-do**
 
 `internaltidemap_AMM60_paper.ipynb`:
 Update to do running mean averaging rather than 3 day chunking
-Make some manuscript plots
-
-`pycnocline_mod_obs_virtual_mooring.ipynb`:
-Export to py file
 Make some manuscript plots
 
 `diagnose_delta from amm60_data_tools.py`:
