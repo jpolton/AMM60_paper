@@ -38,6 +38,11 @@ Fixed `internaltidemap_AMM60_paper.ipynb` and `pycnocline_mod_obs_virtual_moorin
 * Shift core code to python file: `pycnocline_virtual_mooring.py`
 
 ---
+**28 Nov**
+
+* Cloned repo on SAN. Testing is this is going to break stuff 
+
+---
 **To-do**
 
 `internaltidemap_AMM60_paper.ipynb`:
