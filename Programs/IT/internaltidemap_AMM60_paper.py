@@ -1,3 +1,5 @@
+
+# %%writefile internaltidemap_AMM60_paper.py
 # %load internaltidemap_AMM60_paper.py
 #
 # internaltidemap_AMM60_paper.py
