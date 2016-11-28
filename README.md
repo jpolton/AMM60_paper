@@ -48,8 +48,8 @@ Fixed `internaltidemap_AMM60_paper.ipynb` and `pycnocline_mod_obs_virtual_moorin
 **To-do**
 
 `internaltidemap_AMM60_paper.ipynb`:
-JP: Update to do running mean averaging rather than 3 day chunking
-Make some manuscript plots
+* strat does not vary with time
+* grey mask issue not working
 
 `diagnose_delta from amm60_data_tools.py`:
 KG: make sure it still works for your FFT code
