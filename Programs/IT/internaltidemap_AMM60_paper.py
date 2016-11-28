@@ -18,6 +18,7 @@ import copy # For deep copying variables
 from amm60_data_tools import NEMO_fancy_datestr # convert NEMO time 
 from amm60_data_tools import delta_diagnose # compute pycnocline depth and variance
 
+import matplotlib.colors as colors # colorbar with log distribution
 import matplotlib.pyplot as plt  # plotting
 %matplotlib inline
 
@@ -484,3 +485,66 @@ for i in range(6,7):
     ###############################
     fname = dirroot+'/scratch/jelt/tmp/internaltidemap'+str(i).zfill(3)+'_IT_stats.png'
     plt.savefig(fname)
+    
+    
+##############################################################################    
+# Plot std histogram vs time
+##############################################################################
+
+"""
+Actually want to plot std(delta) rather than the variance.
+Since the quantity carried is sortvar=log10(variance) need to do a little bit of algebra
+variance = std^2 = 10^(sortvar)
+Therefore
+std = sqrt(10^sortvar) OR 10^(sortvar/2)
+"""
+
+std = np.power(10,sortvar/2)
+
+fig = plt.figure(figsize=(12,6))
+
+## SSH
+###############################
+var = depth_ST4
+hlim = [-0.25, 0.25]
+ax1 = fig.add_subplot(211)
+ax1.plot(time_datetime_ST4, depth_ST4[:,-1,1,1])
+dstart = datetime.datetime(2012,6,1)
+dend = datetime.datetime(2012,8,9)
+ax1.set_xlim(dstart, dend)
+#plt.xlabel('time')
+ax1.set_ylabel('SSH above mean (m)')
+ax1.set_title('ST4 SSH')
+# text label
+start = ax1.get_xlim()[0] + 0.5
+ax1.text(start, -0.025, 'a) SSH at ST4')
+
+
+
+ax2 = fig.add_subplot(212)
+msh = ax2.pcolormesh(time_datetime_3day,np.arange(100),std.T, norm=colors.LogNorm(vmin=1, vmax=10))
+ax2.set_ylabel('domain coverage %')
+ax2.set_xlabel('time')
+ax2.set_xlim(dstart,dend)
+#msh.set_clim(0,np.log10(30))
+
+# Now adding the colorbar
+#cbaxes = fig.add_axes([0.13, -0.02, 0.77, 0.03]) # [left, bottom, width, height]
+#cb = fig.colorbar(msh, cax = cbaxes, orientation='horizontal') 
+cbaxes = fig.add_axes([0.91, 0.125, 0.03, 0.775]) # [left, bottom, width, height]
+cb = fig.colorbar(msh, cax = cbaxes, orientation='vertical') 
+# Fiddle with the colorbar ticks
+cb.set_ticks(range(1,11))
+cb.set_ticklabels(range(1,11))
+
+
+
+# text label
+start = ax2.get_xlim()[0] + 1.5
+ax2.text(start, 7, 'b) std($\delta$) (m)',color='w')
+
+
+## Save output
+###############################
+fname = dirroot+'/scratch/jelt/tmp/internaltidemap_std.png'
+plt.savefig(fname)
