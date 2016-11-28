@@ -1,5 +1,3 @@
-
-# %%writefile internaltidemap_AMM60_paper.py
 # %load internaltidemap_AMM60_paper.py
 #
 # internaltidemap_AMM60_paper.py
@@ -25,7 +23,8 @@ import matplotlib.pyplot as plt  # plotting
 
 
 ##############################################################################
-# Check host name and username
+# Check host name and username.
+# Depending on machine and modify path tree and flag to load partial data set
 import socket
 hostname = socket.gethostname()
 
@@ -37,7 +36,7 @@ if 'livmaf' in hostname and username in ['jeff','jelt']:
     speedflag = True # only load in one file
 elif 'livljobs' in hostname and username in ['jeff','jelt']:
     dirroot = ''
-    speedflag = True # only load in one file
+    speedflag = False # only load in one file
 else:
     dirroot = ''
     speedflag = False
@@ -239,7 +238,7 @@ print 'Process data'
 print '############'
 
 
-# Stack rho data into a 3 layer profile
+# Stack rho data into a 3 layer in z-direction, so data can be treated as profiles
 profile = rho_top[:,np.newaxis,:,:]
 profile = np.append(profile, rho_bar[:,np.newaxis,:,:], axis=1)
 profile = np.append(profile, rho_bot[:,np.newaxis,:,:], axis=1)
@@ -288,6 +287,26 @@ mask_strat = ( mean_strat >= -2E-3 ).astype(int)*(-999)   # Good vals: 0 / bad v
 
 
 
+# Process sorted variances
+###############################
+print 'process sorted variances'
+runwin_nt = np.shape(internal_tide_map_3day[:,:,:])[0]
+
+# Define new array to store sorted variance data
+sortvar = np.zeros((runwin_nt,100)) # array [nt,% of finite area] of domain with var at value. 
+for i in range(runwin_nt):
+    # Sort snapshot of data 
+    var = mask*copy.deepcopy(internal_tide_map_3day[i,:,:]) # function of [t=0,y,x] * (spatial mask)
+    var[mask*mask_strat==-999] = np.nan # nan for unstratified locations
+    tt = np.sort(np.log10(var), axis=None)
+    
+    # Interpolate onto 100 points, excluding nans
+    not_nan = ~np.isnan(tt)
+    indices = np.arange(len(tt[not_nan]))
+    ind_short = np.linspace(0,np.sum(not_nan)-1,100)
+    sortvar[i,:] = np.interp(ind_short, indices, tt[not_nan])
+    
+    
 
 
 ##############################################################################
@@ -382,7 +401,7 @@ var = np.log10(internal_tide_map*mask_land*mask_200m) #*mask_strat)
 clim = [0., 2.6]
 #clim = [np.nanpercentile(var, 1), np.nanpercentile(var, 99)]
 #print 'subplot 3: percentile range:',clim
-plotit_sub(nav_lon,nav_lat,var+mask_strat,'log10[pycnocline depth variance (m)]',clim,'224')
+plotit_sub(nav_lon,nav_lat,var+mask_strat,'log10[pycnocline depth variance (m^2)]',clim,'224')
 #plt.clim(clim)
 
 
@@ -392,8 +411,9 @@ plotit_sub(nav_lon,nav_lat,var+mask_strat,'log10[pycnocline depth variance (m)]'
 ##############################################################################
 # Plot pycnocline statistics in 3 day chunks
 ##############################################################################
-#for i in range(6,7):
-for i in range(nt/(24*3)):
+for i in range(6,7):
+#for i in range(nt/(24*3)):
+#for i in range(np.size(time_counter_3day[:,:][0])):
 
     # Find indices in SSH ST4 data that correspond to the IT data
     ind = [ii for ii in range(len(time_counter_ST4)) if time_counter_ST4[ii] in time_counter_3day[i,:]]
