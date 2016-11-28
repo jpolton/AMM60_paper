@@ -1,5 +1,16 @@
 # AMM60_paper
 
+Introduction
+============
+Repository for development of py (and ipynb) files. Since the notebook files have embedded figures in them they do not work well within version control. I use them as dynamic workspace. When stuff works and is sharable and co-editable it goes into a py file, which is loaded into the notebooks.
+So, ipynb files are single ownership, multiple readership.
+py files are global read and write.
+
+%load file.py # this is a magic command to load a python file into a notebook cell.
+
+%%writefile file.py # this is a magic command to write a python file with the contents of a notebook cell.
+
+
 **25 Nov**
 ----------
 To many copies of delta_diagnose function and methods. Removed `IT/AMM60_tools.py` and created symbolic link::
@@ -30,8 +41,8 @@ Fixed `internaltidemap_AMM60_paper.ipynb` and `pycnocline_mod_obs_virtual_moorin
 **To-do**
 
 `internaltidemap_AMM60_paper.ipynb`:
-Update to do running mean averaging rather than 3 day chunking
+JP: Update to do running mean averaging rather than 3 day chunking
 Make some manuscript plots
 
 `diagnose_delta from amm60_data_tools.py`:
-Karen: make sure it still works for your FFT code
+KG: make sure it still works for your FFT code
