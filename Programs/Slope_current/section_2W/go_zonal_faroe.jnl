@@ -1,0 +1,161 @@
+ ! NOAA/PMEL TMAP
+ ! FERRET v6.96  
+ ! Linux 2.6.32-573.7.1.el6.x86_64 64-bit - 12/02/15
+ ! 11-Nov-16 12:19     
+
+set memory/size=2024
+!!!!!!!!!!!! AMMM60 !!!!!!!!!!!!11
+cancel data/all
+pal light_centered
+
+!! U !!
+use "/media/data1/AMM60/RUNS/RUN_nodiff_2012/AMM60_U_5d.des"
+use "/media/data1/AMM60/RUNS/RUN_nodiff_2012/AMM60_T_5d.des"
+use "/media/data1/AMM60/Config_files/mesh_zgr.nc"
+set var/bad=0 vozocrtx[d=1]
+set var/bad=0 thetao[d=2]
+define axis/y=40.962:64.932/npoints=1440 yax
+fill/vlimits=0:3000/i=625/j=1100:1440/lev=(-inf)(-0.2 0.2 0.01)(inf) vozocrtx[l=$1:$2@ave,d=1],nav_lat,gdept_0
+contour/ov/vlimits=0:3000/i=625/j=1100:1440/lev=(0)(3)(5)(7)(10)(12) thetao[l=$1:$2@ave,d=2],nav_lat,gdept_0
+frame/file="$3_section_zonal_shetland_AMM60.gif"
+
+!! V !!
+cancel data/all
+use "/media/data1/AMM60/RUNS/RUN_nodiff_2012/AMM60_V_5d.des"
+use "/media/data1/AMM60/RUNS/RUN_nodiff_2012/AMM60_T_5d.des"
+use "/media/data1/AMM60/Config_files/mesh_zgr.nc"
+set var/bad=0 vomecrty[d=1]
+set var/bad=0 thetao[d=2]
+define axis/y=40.962:64.932/npoints=1440 yax
+fill/vlimits=0:3000/i=625/j=1100:1440/lev=(-inf)(-0.2 0.2 0.01)(inf) vomecrty[l=$1:$2@ave,d=1],nav_lat,gdept_0
+contour/ov/vlimits=0:3000/i=625/j=1100:1440/lev=(0)(3)(5)(7)(10)(12) thetao[l=$1:$2@ave,d=2],nav_lat,gdept_0
+frame/file="$3_section_merid_shetland_AMM60.gif"
+
+!! T !!
+pal default
+cancel data/all
+use "/media/data1/AMM60/RUNS/RUN_nodiff_2012/AMM60_T_5d.des"
+use "/media/data1/AMM60/RUNS/RUN_nodiff_2012/AMM60_U_5d.des"
+use "/media/data1/AMM60/Config_files/mesh_zgr.nc"
+set var/bad=0 thetao[d=1]
+set var/bad=0 vozocrtx[d=2]
+define axis/y=40.962:64.932/npoints=1440 yax
+fill/vlimits=0:3000/i=625/j=1100:1440 thetao[l=$1:$2@ave,d=1],nav_lat,gdept_0[d=3]
+contour/vlimits=0:3000/ov/i=625/j=1100:1440/lev=(-inf)(-0.2 0.2 0.05)(inf) vozocrtx[l=$1:$2@ave,d=2],nav_lat,gdept_0[d=3]
+frame/file="$3_section_T_zonal_shetland_AMM60.gif"
+
+!! T !!
+pal default
+cancel data/all
+use "/media/data1/AMM60/RUNS/RUN_nodiff_2012/AMM60_T_5d.des"
+use "/media/data1/AMM60/RUNS/RUN_nodiff_2012/AMM60_V_5d.des"
+use "/media/data1/AMM60/Config_files/mesh_zgr.nc"
+set var/bad=0 thetao[d=1]
+set var/bad=0 vomecrty[d=2]
+define axis/y=40.962:64.932/npoints=1440 yax
+fill/vlimits=0:3000/i=625/j=1100:1440 thetao[l=$1:$2@ave,d=1],nav_lat,gdept_0[d=3]
+contour/vlimits=0:3000/ov/i=625/j=1100:1440/lev=(-inf)(-0.2 0.2 0.05)(inf) vomecrty[l=$1:$2@ave,d=2],nav_lat,gdept_0[d=3]
+frame/file="$3_section_T_merid_shetland_AMM60.gif"
+
+
+!!!!!!!!!!!! AMMM7 !!!!!!!!!!!!11
+!! U !!
+pal light_centered
+cancel data/all
+use "/media/data1/AMM7/2012/AMM7_U_5d.des"
+use "/media/data1/AMM7/2012/AMM7_T_5d.des"
+use "/media/data1/AMM7/Config_files/mesh_mask_AMM7.nc"
+set var/bad=0 vozocrtx[d=1]
+set var/bad=0 thetao[d=2]
+define axis/y=40.067:65.001/npoints=375 yax
+fill/vlimits=0:3000/i=162/j=288:374/lev=(-inf)(-0.2 0.2 0.01)(inf) vozocrtx[l=$1:$2@ave,d=1],nav_lat,gdept_0
+contour/ov/vlimits=0:3000/i=162/j=288:374/lev=(0)(3)(5)(7)(10)(12) thetao[l=$1:$2@ave,d=2],nav_lat,gdept_0
+frame/file="$3_section_zonal_shetland_AMM7.gif"
+
+!! V !!
+cancel data/all
+use "/media/data1/AMM7/2012/AMM7_V_5d.des"
+use "/media/data1/AMM7/2012/AMM7_T_5d.des"
+use "/media/data1/AMM7/Config_files/mesh_mask_AMM7.nc"
+set var/bad=0 vomecrty[d=1]
+set var/bad=0 thetao[d=2]
+define axis/y=40.067:65.001/npoints=375 yax
+fill/vlimits=0:3000/i=162/j=288:374/lev=(-inf)(-0.2 0.2 0.01)(inf) vomecrty[l=$1:$2@ave,d=1],nav_lat,gdept_0
+contour/ov/vlimits=0:3000/i=162/j=288:374/lev=(0)(3)(5)(7)(10)(12) thetao[l=$1:$2@ave,d=2],nav_lat,gdept_0
+frame/file="$3_section_merid_shetland_AMM7.gif"
+
+!! T !!
+cancel data/all
+pal default
+use "/media/data1/AMM7/2012/AMM7_T_5d.des"
+use "/media/data1/AMM7/2012/AMM7_U_5d.des"
+use "/media/data1/AMM7/Config_files/mesh_mask_AMM7.nc"
+set var/bad=0 thetao[d=1]
+set var/bad=0 vozocrtx[d=2]
+define axis/y=40.067:65.001/npoints=375 yax
+fill/vlimits=0:3000/i=162/j=288:374 thetao[l=$1:$2@ave,d=1],nav_lat,gdept_0[d=3]
+contour/vlimits=0:3000/ov/i=162/j=288:374/lev=(-inf)(-0.2 0.2 0.05)(inf) vozocrtx[l=$1:$2@ave,d=2],nav_lat,gdept_0
+frame/file="$3_section_T_zonal_shetland_AMM7.gif"
+
+!! T !!
+cancel data/all
+pal default
+use "/media/data1/AMM7/2012/AMM7_T_5d.des"
+use "/media/data1/AMM7/2012/AMM7_V_5d.des"
+use "/media/data1/AMM7/Config_files/mesh_mask_AMM7.nc"
+set var/bad=0 thetao[d=1]
+set var/bad=0 vomecrty[d=2]
+define axis/y=40.067:65.001/npoints=375 yax
+fill/vlimits=0:3000/i=162/j=288:374 thetao[l=$1:$2@ave,d=1],nav_lat,gdept_0[d=3]
+contour/vlimits=0:3000/ov/i=162/j=288:374/lev=(-inf)(-0.2 0.2 0.05)(inf) vomecrty[l=$1:$2@ave,d=2],nav_lat,gdept_0
+frame/file="$3_section_T_merid_shetland_AMM7.gif"
+
+!!!!!!!!!!!! NNA !!!!!!!!!!!!11
+!! U !!
+pal light_centered
+cancel data/all
+use "/media/data1/NNA/2012_era/NNA_U_d05.des"
+use "/media/data1/NNA/2012_era/NNA_T_d05.des"
+use "/media/data1/NNA/Config_files/mesh_zgr.nc4"
+set var/bad=0 vozocrtx[d=1]
+define axis/y=25.374:75.453/npoints=931 yax
+fill/vlimits=0:3000/i=1027/j=561:682/lev=(-inf)(-0.2 0.2 0.01)(inf) vozocrtx[l=$1:$2@ave,d=1],nav_lat,gdept_0
+contour/ov/vlimits=0:3000/i=1027/j=561:682/lev=(0)(3)(5)(7)(10)(12) votemper[l=$1:$2@ave,d=2],nav_lat,gdept_0
+frame/file="$3_section_zonal_shetland_NNA.gif"
+
+!! V !!
+cancel data/all
+use "/media/data1/NNA/2012_era/NNA_V_d05.des"
+use "/media/data1/NNA/2012_era/NNA_T_d05.des"
+use "/media/data1/NNA/Config_files/mesh_zgr.nc4"
+set var/bad=0 vomecrty[d=1]
+define axis/y=40.067:65.001/npoints=375 yax
+fill/vlimits=0:3000/i=1027/j=561:682/lev=(-inf)(-0.2 0.2 0.01)(inf) vomecrty[l=$1:$2@ave,d=1],nav_lat,gdept_0
+contour/ov/vlimits=0:3000/i=1027/j=561:682/lev=(0)(3)(5)(7)(10)(12) votemper[l=$1:$2@ave,d=2],nav_lat,gdept_0
+frame/file="$3_section_merid_shetland_NNA.gif"
+
+!! T !!
+cancel data/all
+pal default
+use "/media/data1/NNA/2012_era/NNA_T_d05.des"
+use "/media/data1/NNA/2012_era/NNA_U_d05.des"
+use "/media/data1/NNA/Config_files/mesh_zgr.nc4"
+set var/bad=0 votemper[d=1]
+set var/bad=0 vozocrtx[d=2]
+define axis/y=40.067:65.001/npoints=375 yax
+fill/vlimits=0:3000/i=1027/j=561:682 votemper[l=$1:$2@ave,d=1],nav_lat,gdept_0[d=3]
+contour/vlimits=0:3000/ov/i=1027/j=561:682/lev=(-inf)(-0.2 0.2 0.05)(inf) vozocrtx[l=$1:$2@ave,d=2],nav_lat,gdept_0
+frame/file="$3_section_T_zonal_shetland_NNA.gif"
+
+!! T !!
+cancel data/all
+pal default
+use "/media/data1/NNA/2012_era/NNA_T_d05.des"
+use "/media/data1/NNA/2012_era/NNA_V_d05.des"
+use "/media/data1/NNA/Config_files/mesh_zgr.nc4"
+set var/bad=0 votemper[d=1]
+set var/bad=0 vomecrty[d=2]
+define axis/y=40.067:65.001/npoints=375 yax
+fill/vlimits=0:3000/i=1027/j=561:682 votemper[l=$1:$2@ave,d=1],nav_lat,gdept_0[d=3]
+contour/vlimits=0:3000/ov/i=1027/j=561:682/lev=(-inf)(-0.2 0.2 0.05)(inf) vomecrty[l=$1:$2@ave,d=2],nav_lat,gdept_0
+frame/file="$3_section_T_merid_shetland_NNA.gif"
