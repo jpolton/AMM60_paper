@@ -42,7 +42,7 @@ Fixed `internaltidemap_AMM60_paper.ipynb` and `pycnocline_mod_obs_virtual_moorin
 
 * Cloned repo on SAN. Testing is this is going to break stuff 
 * Seems to work. Syncing from SAN now through ssh tunnels.
-* Plotting std(delta) vs time. Created py file.
+* Plotting std(delta) vs time. Created py file
 
 ---
 **To-do**
