@@ -38,11 +38,18 @@ Fixed `internaltidemap_AMM60_paper.ipynb` and `pycnocline_mod_obs_virtual_moorin
 * Shift core code to python file: `pycnocline_virtual_mooring.py`
 
 ---
+**28 Nov**
+
+* Cloned repo on SAN. Testing is this is going to break stuff 
+* Seems to work. Syncing from SAN now through ssh tunnels.
+* Plotting std(delta) vs time. Created py file
+
+---
 **To-do**
 
 `internaltidemap_AMM60_paper.ipynb`:
-JP: Update to do running mean averaging rather than 3 day chunking
-Make some manuscript plots
+* strat does not vary with time
+* grey mask issue not working
 
 `diagnose_delta from amm60_data_tools.py`:
 KG: make sure it still works for your FFT code

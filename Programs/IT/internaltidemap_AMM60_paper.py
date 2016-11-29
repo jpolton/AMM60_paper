@@ -18,12 +18,14 @@ import copy # For deep copying variables
 from amm60_data_tools import NEMO_fancy_datestr # convert NEMO time 
 from amm60_data_tools import delta_diagnose # compute pycnocline depth and variance
 
+import matplotlib.colors as colors # colorbar with log distribution
 import matplotlib.pyplot as plt  # plotting
 %matplotlib inline
 
 
 ##############################################################################
-# Check host name and username
+# Check host name and username.
+# Depending on machine and modify path tree and flag to load partial data set
 import socket
 hostname = socket.gethostname()
 
@@ -35,7 +37,7 @@ if 'livmaf' in hostname and username in ['jeff','jelt']:
     speedflag = True # only load in one file
 elif 'livljobs' in hostname and username in ['jeff','jelt']:
     dirroot = ''
-    speedflag = True # only load in one file
+    speedflag = False # only load in one file
 else:
     dirroot = ''
     speedflag = False
@@ -237,7 +239,7 @@ print 'Process data'
 print '############'
 
 
-# Stack rho data into a 3 layer profile
+# Stack rho data into a 3 layer in z-direction, so data can be treated as profiles
 profile = rho_top[:,np.newaxis,:,:]
 profile = np.append(profile, rho_bar[:,np.newaxis,:,:], axis=1)
 profile = np.append(profile, rho_bot[:,np.newaxis,:,:], axis=1)
@@ -286,6 +288,26 @@ mask_strat = ( mean_strat >= -2E-3 ).astype(int)*(-999)   # Good vals: 0 / bad v
 
 
 
+# Process sorted variances
+###############################
+print 'process sorted variances'
+runwin_nt = np.shape(internal_tide_map_3day[:,:,:])[0]
+
+# Define new array to store sorted variance data
+sortvar = np.zeros((runwin_nt,100)) # array [nt,% of finite area] of domain with var at value. 
+for i in range(runwin_nt):
+    # Sort snapshot of data 
+    var = mask*copy.deepcopy(internal_tide_map_3day[i,:,:]) # function of [t=0,y,x] * (spatial mask)
+    var[mask*mask_strat==-999] = np.nan # nan for unstratified locations
+    tt = np.sort(np.log10(var), axis=None)
+    
+    # Interpolate onto 100 points, excluding nans
+    not_nan = ~np.isnan(tt)
+    indices = np.arange(len(tt[not_nan]))
+    ind_short = np.linspace(0,np.sum(not_nan)-1,100)
+    sortvar[i,:] = np.interp(ind_short, indices, tt[not_nan])
+    
+    
 
 
 ##############################################################################
@@ -380,7 +402,7 @@ var = np.log10(internal_tide_map*mask_land*mask_200m) #*mask_strat)
 clim = [0., 2.6]
 #clim = [np.nanpercentile(var, 1), np.nanpercentile(var, 99)]
 #print 'subplot 3: percentile range:',clim
-plotit_sub(nav_lon,nav_lat,var+mask_strat,'log10[pycnocline depth variance (m)]',clim,'224')
+plotit_sub(nav_lon,nav_lat,var+mask_strat,'log10[pycnocline depth variance (m^2)]',clim,'224')
 #plt.clim(clim)
 
 
@@ -390,8 +412,9 @@ plotit_sub(nav_lon,nav_lat,var+mask_strat,'log10[pycnocline depth variance (m)]'
 ##############################################################################
 # Plot pycnocline statistics in 3 day chunks
 ##############################################################################
-#for i in range(6,7):
-for i in range(nt/(24*3)):
+for i in range(6,7):
+#for i in range(nt/(24*3)):
+#for i in range(np.size(time_counter_3day[:,:][0])):
 
     # Find indices in SSH ST4 data that correspond to the IT data
     ind = [ii for ii in range(len(time_counter_ST4)) if time_counter_ST4[ii] in time_counter_3day[i,:]]
@@ -462,3 +485,66 @@ for i in range(nt/(24*3)):
     ###############################
     fname = dirroot+'/scratch/jelt/tmp/internaltidemap'+str(i).zfill(3)+'_IT_stats.png'
     plt.savefig(fname)
+    
+    
+##############################################################################    
+# Plot std histogram vs time
+##############################################################################
+
+"""
+Actually want to plot std(delta) rather than the variance.
+Since the quantity carried is sortvar=log10(variance) need to do a little bit of algebra
+variance = std^2 = 10^(sortvar)
+Therefore
+std = sqrt(10^sortvar) OR 10^(sortvar/2)
+"""
+
+std = np.power(10,sortvar/2)
+
+fig = plt.figure(figsize=(12,6))
+
+## SSH
+###############################
+var = depth_ST4
+hlim = [-0.25, 0.25]
+ax1 = fig.add_subplot(211)
+ax1.plot(time_datetime_ST4, depth_ST4[:,-1,1,1])
+dstart = datetime.datetime(2012,6,1)
+dend = datetime.datetime(2012,8,9)
+ax1.set_xlim(dstart, dend)
+#plt.xlabel('time')
+ax1.set_ylabel('SSH above mean (m)')
+ax1.set_title('ST4 SSH')
+# text label
+start = ax1.get_xlim()[0] + 0.5
+ax1.text(start, -0.025, 'a) SSH at ST4')
+
+
+
+ax2 = fig.add_subplot(212)
+msh = ax2.pcolormesh(time_datetime_3day,np.arange(100),std.T, norm=colors.LogNorm(vmin=1, vmax=10))
+ax2.set_ylabel('domain coverage %')
+ax2.set_xlabel('time')
+ax2.set_xlim(dstart,dend)
+#msh.set_clim(0,np.log10(30))
+
+# Now adding the colorbar
+#cbaxes = fig.add_axes([0.13, -0.02, 0.77, 0.03]) # [left, bottom, width, height]
+#cb = fig.colorbar(msh, cax = cbaxes, orientation='horizontal') 
+cbaxes = fig.add_axes([0.91, 0.125, 0.03, 0.775]) # [left, bottom, width, height]
+cb = fig.colorbar(msh, cax = cbaxes, orientation='vertical') 
+# Fiddle with the colorbar ticks
+cb.set_ticks(range(1,11))
+cb.set_ticklabels(range(1,11))
+
+
+
+# text label
+start = ax2.get_xlim()[0] + 1.5
+ax2.text(start, 7, 'b) std($\delta$) (m)',color='w')
+
+
+## Save output
+###############################
+fname = dirroot+'/scratch/jelt/tmp/internaltidemap_std.png'
+plt.savefig(fname)
