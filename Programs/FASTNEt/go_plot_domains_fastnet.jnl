@@ -1,0 +1,111 @@
+cancel data/all
+use "/media/data1/NNA/Config_files/NNA_R12_bathy_meter_v3.3.nc"
+use "/media/data1/AMM7/Config_files/bathy_meter2.nc"
+use "/media/data1/AMM60/Config_files/bathyfile_AMM60.nc"
+
+set win/size=1.1
+set win/aspect=0.3
+define viewport/axes/x=0.05:0.29/y=0.12:0.98 NNA
+define viewport/axes/x=0.35:0.59/y=0.12:0.98 AMM7
+define viewport/axes/x=0.65:0.89/y=0.12:0.98 AMM60
+pal inverse_grayscale
+ppl axlsze 0.15 0.15; ppl axlint 3 3
+
+!!!!! CELTIC !!!!!
+set viewport NNA
+shade/nolabels/d=1/hlimits=-11:-8.5/vlimits=47.5:49.5/lev=(10 200 10)(200 1000 100)(1000 4000 500)(inf) bathymetry,nav_lon,nav_lat
+ppl shakey 0,,,0.17
+ppl shade
+contour/d=1/ov/lev=(200)(1000)/nolabels/size=0.15/spacing=4 bathymetry,nav_lon,nav_lat
+plot/ov/vs/color=black/nolabels/size=0.2/symbol=22 -9.6297,48.1469
+plot/ov/vs/color=black/nolabels/size=0.2/symbol=22 -9.5463,48.2443
+plot/ov/vs/color=black/nolabels/size=0.2/symbol=22 -9.1039,48.6433
+plot/ov/vs/color=black/nolabels/size=0.2/symbol=22 -9.4030,48.7666
+set text/font=arial/color=black
+label -9.94,48.12,,0.15, St1
+label -9.84,48.22,,0.15, St2
+label -9.05,48.62,,0.15, St4
+label -9.7,48.74,,0.15, St5
+set text/font=arial/color=white
+annotate/normalized/xpos=0.05/ypos=0.9/halign=-1/size=0.3 NNA
+set text/font=arial/color=black
+
+set viewport AMM7
+shade/nolabels/d=2/hlimits=-11:-8.5/vlimits=47.5:49.5/lev=(10 200 10)(200 1000 100)(1000 4000 500)(inf) bathymetry
+ppl shakey 0,,,0.17
+ppl shade
+contour/d=2/ov/lev=(200)(1000)/nolabels/size=0.15/spacing=4 bathymetry
+plot/ov/vs/color=black/nolabels/size=0.2/symbol=22 -9.6297,48.1469
+plot/ov/vs/color=black/nolabels/size=0.2/symbol=22 -9.5463,48.2443
+plot/ov/vs/color=black/nolabels/size=0.2/symbol=22 -9.1039,48.6433
+plot/ov/vs/color=black/nolabels/size=0.2/symbol=22 -9.4030,48.7666
+set text/font=arial/color=black
+label -9.94,48.12,,0.15, St1
+label -9.84,48.22,,0.15, St2
+label -9.05,48.62,,0.15, St4
+label -9.7,48.74,,0.15, St5
+set text/font=arial/color=white
+annotate/normalized/xpos=0.05/ypos=0.9/halign=-1/size=0.3 AMM7
+set text/font=arial/color=black
+
+set viewport AMM60
+shade/nolabels/d=3/hlimits=-11:-8.5/vlimits=47.5:49.5/lev=(10 200 10)(200 1000 100)(1000 4000 500)(inf) bathymetry,lon,lat
+ppl shakey 1,,,0.17
+ppl shade
+contour/d=3/ov/lev=(200)(1000)/nolabels/size=0.15 bathymetry,lon,lat
+plot/ov/vs/color=black/nolabels/size=0.2/symbol=22 -9.6297,48.1469
+plot/ov/vs/color=black/nolabels/size=0.2/symbol=22 -9.5463,48.2443
+plot/ov/vs/color=black/nolabels/size=0.2/symbol=22 -9.1039,48.6433
+plot/ov/vs/color=black/nolabels/size=0.2/symbol=22 -9.4030,48.7666
+set text/font=arial/color=black
+label -9.94,48.12,,0.15, St1
+label -9.84,48.22,,0.15, St2
+label -9.05,48.62,,0.15, St4
+label -9.7,48.74,,0.15, St5
+set text/font=arial/color=white
+annotate/normalized/xpos=0.05/ypos=0.9/halign=-1/size=0.3 AMM60
+set text/font=arial/color=black
+
+frame/file="Celtic_domain_allconf.png"
+
+!!!!! MALIN !!!!!
+set viewport NNA
+shade/nolabels/d=1/hlimits=-10.5:-7.5/vlimits=55.3:56.4/lev=(10 200 10)(200 1000 100)(1000 3000 500)(inf) bathymetry,nav_lon,nav_lat
+ppl axlsze 0.15 0.15; ppl axlint 3 3; ppl shakey 0,,,0.17
+ppl shade
+contour/d=1/ov/lev=(200)(1000)/nolabels/size=0.15 bathymetry,nav_lon,nav_lat
+plot/ov/vs/color=black/nolabels/size=0.2/symbol=22 -9.054,55.88
+
+set text/font=arial/color=black
+label -8.93,55.865,,0.15, SE
+set text/font=arial/color=white
+annotate/normalized/xpos=0.05/ypos=0.9/halign=-1/size=0.3 NNA
+set text/font=arial/color=black
+
+set viewport AMM7
+shade/nolabels/d=2/hlimits=-10.5:-7.5/vlimits=55.3:56.4/lev=(10 200 10)(200 1000 100)(1000 3000 500)(inf) bathymetry
+ppl axlsze 0.15 0.15; ppl axlint 3 3; ppl shakey 0,,,0.17
+ppl shade
+contour/d=2/ov/lev=(200)(1000)/nolabels/size=0.15 bathymetry
+plot/ov/vs/color=black/nolabels/size=0.2/symbol=22 -9.054,55.88
+
+set text/font=arial/color=black
+label -8.93,55.865,,0.15, SE
+set text/font=arial/color=white
+annotate/normalized/xpos=0.05/ypos=0.9/halign=-1/size=0.3 AMM7
+set text/font=arial/color=black
+
+set viewport AMM60
+shade/nolabels/d=3/hlimits=-10.5:-7.5/vlimits=55.3:56.4/lev=(10 200 10)(200 1000 100)(1000 3000 500)(inf) bathymetry,lon,lat
+ppl axlsze 0.15 0.15; ppl axlint 3 3; ppl shakey 1,,,0.17
+ppl shade
+contour/d=3/ov/lev=(200)(1000)/nolabels/size=0.15 bathymetry,lon,lat
+plot/ov/vs/color=black/nolabels/size=0.2/symbol=22 -9.054,55.88
+
+set text/font=arial/color=black
+label -8.93,55.865,,0.15, SE
+set text/font=arial/color=white
+annotate/normalized/xpos=0.05/ypos=0.9/halign=-1/size=0.3 AMM60
+set text/font=arial/color=black
+
+frame/file="Malin_domain_allconf.png"

@@ -1,0 +1,26 @@
+!!!!!!!!!!!! NNA !!!!!!!!!!!!11
+!! U !!
+pal light_centered
+cancel data/all
+use "/media/data1/NNA/2012_era/NNA_U_d05.des"
+use "/media/data1/NNA/2012_era/NNA_V_d05.des"
+use "/media/data1/NNA/2012_era/NNA_T_d05.des"
+use "/media/data1/NNA/Config_files/mesh_zgr.nc4"
+set var/bad=0 vozocrtx[d=1]
+set var/bad=0 vomecrty[d=2]
+set var/bad=0 votemper[d=3]
+set var/bad=0 vosaline[d=3]
+
+LET zeta=(vomecrty[d=2,x=@ddc])-(vozocrtx[d=1,y=@ddc])  ! relative vorticity
+let pi = 4*atan(1.0)  !! or acos(-1.0)
+let deg2rad = pi/180
+let omega = 2*pi/(24*60*60)
+let f=2*omega*sin(deg2rad*Y[g=nav_lat[d=4]]) !planetary V
+let rho_zero=1026 ! referece density
+let density = rho_un(votemper[d=3],vosaline[d=3],nav_lev[d=4])
+let grad=DENSITY[z=@ddc] ! density gradient
+let PV = (grad*(zeta+f))/rho_zero
+
+shade/i=900:1100/j=540:674 zeta[l=1:2@ave,z=0:400@ave]
+shade/i=900:1100/j=540:674 PV[l=1:20@ave,z=0:400@ave]
+

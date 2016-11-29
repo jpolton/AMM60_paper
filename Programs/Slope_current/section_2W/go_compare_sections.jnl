@@ -1,0 +1,132 @@
+ ! NOAA/PMEL TMAP
+ ! FERRET v6.96  
+ ! Linux 2.6.32-573.7.1.el6.x86_64 64-bit - 12/02/15
+ ! 11-Nov-16 12:19     
+
+set memory/size=1024
+!!!!!!!!!!!! AMMM60 !!!!!!!!!!!!11
+cancel data/all
+
+!cancel w 1; set w 1
+set win/size=1.1
+set win/aspect=0.3
+define viewport/axes/x=0.05:0.3/y=0.17:0.96 NNA
+define viewport/axes/x=0.35:0.6/y=0.17:0.96 AMM7
+define viewport/axes/x=0.65:0.9/y=0.17:0.96 AMM60
+
+
+!! AMM60 !!
+use "/media/data1/AMM60/RUNS/RUN_nodiff_2012/AMM60_U_5d.des"
+use "/media/data1/AMM60/RUNS/RUN_nodiff_2012/AMM60_V_5d.des"
+use "/media/data1/AMM60/RUNS/RUN_nodiff_2012/AMM60_T_5d.des"
+use "/media/data1/AMM60/Config_files/mesh_zgr.nc"
+set var/bad=0 vozocrtx[d=1]
+set var/bad=0 vomecrty[d=2]
+set var/bad=0 thetao[d=3]
+define axis/y=40.962:64.932/npoints=1440 yaxamm60
+
+!! AMM7 !!
+use "/media/data1/AMM7/2012/AMM7_U_5d.des"
+use "/media/data1/AMM7/2012/AMM7_V_5d.des"
+use "/media/data1/AMM7/2012/AMM7_T_5d.des"
+use "/media/data1/AMM7/Config_files/mesh_mask_AMM7.nc"
+set var/bad=0 vozocrtx[d=5]
+set var/bad=0 vomecrty[d=6]
+set var/bad=0 thetao[d=7]
+define axis/y=40.067:65.001/npoints=375 yaxamm7
+
+!! NNA !!
+use "/media/data1/NNA/2012_era/NNA_U_d05.des"
+use "/media/data1/NNA/2012_era/NNA_V_d05.des"
+use "/media/data1/NNA/2012_era/NNA_T_d05.des"
+use "/media/data1/NNA/Config_files/mesh_zgr.nc4"
+set var/bad=0 vozocrtx[d=9]
+set var/bad=0 vomecrty[d=10]
+set var/bad=0 votemper[d=11]
+define axis/y=25.374:75.453/npoints=931 yaxnna
+
+!! Bathys !!
+use "/media/data1/AMM60/Config_files/bathyfile_AMM60.nc"
+use "/media/data1/AMM7/Config_files/bathy_meter2.nc"
+use "/media/data1/NNA/Config_files/NNA_R12_bathy_meter_v3.3.nc"
+
+
+
+pal rnb2
+!! Temperature sections !!
+set viewport NNA
+fill/nokey/vlimits=0:3000/i=1027/j=561:682/lev=(-inf)(-1 12 0.5)(inf) votemper[l=$1:$2@ave,d=11],nav_lat[d=11],gdept_0[d=12]
+set viewport AMM7
+fill/nokey/vlimits=0:3000/i=162/j=288:374/lev=(-inf)(-1 12 0.5)(inf) thetao[l=$1:$2@ave,d=7],nav_lat[d=7],gdept_0[d=8]
+set viewport AMM60
+fill/vlimits=0:3000/i=625/j=1100:1440/lev=(-inf)(-1 12 0.5)(inf) thetao[l=$1:$2@ave,d=3],nav_lat[d=3],gdept_0[d=4]
+
+frame/file="$3_Section_T_shetland.gif"
+
+pal light_centered
+!! Zonal Velocity !!
+set viewport NNA
+fill/nokey/vlimits=0:3000/i=1027/j=561:682/lev=(-inf)(-0.15 0.15 0.02)(inf) vozocrtx[l=$1:$2@ave,d=9],nav_lat[d=9],gdept_0[d=12]
+contour/ov/nolabels/vlimits=0:3000/i=1027/j=561:682/lev=(-1 12 2) votemper[l=$1:$2@ave,d=11],nav_lat[d=11],gdept_0[d=12]
+set viewport AMM7
+fill/nokey/vlimits=0:3000/i=162/j=288:374/lev=(-inf)(-0.15 0.15 0.02)(inf) vozocrtx[l=$1:$2@ave,d=5],nav_lat[d=5],gdept_0[d=8]
+contour/ov/nolabels/vlimits=0:3000/i=162/j=288:374/lev=(-1 12 2) thetao[l=$1:$2@ave,d=7],nav_lat[d=7],gdept_0[d=8]
+set viewport AMM60
+fill/vlimits=0:3000/i=625/j=1100:1440/lev=(-inf)(-0.15 0.15 0.02)(inf) vozocrtx[l=$1:$2@ave,d=1],nav_lat[d=1],gdept_0[d=4]
+contour/ov/nolabels/vlimits=0:3000/i=625/j=1100:1440/lev=(-1 12 2) thetao[l=$1:$2@ave,d=3],nav_lat[d=3],gdept_0[d=4]
+
+frame/file="$3_Section_U_shetland.gif"
+
+
+!! Meridonal Velocity !!
+set viewport NNA
+fill/nokey/vlimits=0:3000/i=1027/j=561:682/lev=(-inf)(-0.15 0.15 0.02)(inf) vomecrty[l=$1:$2@ave,d=10],nav_lat[d=10],gdept_0[d=12]
+contour/ov/nolabels/vlimits=0:3000/i=1027/j=561:682/lev=(-1 12 2) votemper[l=$1:$2@ave,d=11],nav_lat[d=11],gdept_0[d=12]
+set viewport AMM7
+fill/nokey/vlimits=0:3000/i=162/j=288:374/lev=(-inf)(-0.15 0.15 0.02)(inf) vomecrty[l=$1:$2@ave,d=6],nav_lat[d=6],gdept_0[d=8]
+contour/ov/nolabels/vlimits=0:3000/i=162/j=288:374/lev=(-1 12 2) thetao[l=$1:$2@ave,d=7],nav_lat[d=7],gdept_0[d=8]
+set viewport AMM60
+fill/vlimits=0:3000/i=625/j=1100:1440/lev=(-inf)(-0.15 0.15 0.02)(inf) vomecrty[l=$1:$2@ave,d=2],nav_lat[d=2],gdept_0[d=4]
+contour/ov/nolabels/vlimits=0:3000/i=625/j=1100:1440/lev=(-1 12 2) thetao[l=$1:$2@ave,d=3],nav_lat[d=3],gdept_0[d=4]
+
+frame/file="$3_Section_V_shetland.gif"
+
+pal no_red
+let mod_nna = (vozocrtx[l=$1:$2@ave,d=9,k=10]^2+vomecrty[l=$1:$2@ave,d=10,k=10]^2)^0.5
+let mod_amm7 = (vozocrtx[l=$1:$2@ave,d=5,k=10]^2+vomecrty[l=$1:$2@ave,d=6,k=10]^2)^0.5
+let mod_amm60 = (vozocrtx[l=$1:$2@ave,d=1,k=10]^2+vomecrty[l=$1:$2@ave,d=2,k=10]^2)^0.5
+
+!! Surface figures: V !!
+set viewport NNA
+fill/nokey/vlimits=58:65/hlimits=-16:6/lev=(0 0.4 0.05)(inf) mod_nna,nav_lon[d=10],nav_lat[d=10]
+polygon/ov/color=black {-3.2,-0.6},{59.2,64.9}
+set viewport AMM7
+fill/nokey/vlimits=58:65/hlimits=-16:6/lev=(0 0.4 0.05)(inf) mod_amm7,nav_lon[d=6],nav_lat[d=6]
+polygon/ov/color=black {-2,-2},{59.2,64.93}
+set viewport AMM60
+fill/vlimits=58:65/hlimits=-16:6/lev=(0 0.4 0.05)(inf) mod_amm60,nav_lon[d=1],nav_lat[d=1]
+polygon/ov/color=black {-2.25,-1.75},{59.2,64.9}
+
+frame/file="$3_surface_mod_shetland.gif"
+
+pal rnb2
+!! Surface figures: T and vec !!
+set viewport NNA
+fill/nokey/vlimits=58:65/hlimits=-16:6/lev=(-inf)($4 $5 0.2)(inf) votemper[d=11,l=$1:$2@ave,k=1],nav_lon[d=10],nav_lat[d=10]
+vec/ov/length=0.5/xskip=6/yskip=6/vlimits=58:65/hlimits=-16:6 vozocrtx[l=$1:$2@ave,d=9,k=1],vomecrty[l=$1:$2@ave,d=10,k=1],nav_lon[d=10],nav_lat[d=10]
+polygon/ov/color=green/nolabels/thick=2 {-3.2,-0.6},{59.2,64.9}
+contour/ov/vlimits=58:65/hlimits=-16:6/nolabels/lev=(200)/d=15/color=green bathymetry,nav_lon[d=10],nav_lat[d=10]
+
+set viewport AMM7
+fill/nokey/vlimits=58:65/hlimits=-16:6/lev=(-inf)($4 $5 0.2)(inf) thetao[d=7,l=$1:$2@ave,k=1],nav_lon[d=6],nav_lat[d=6]
+vec/ov/length=0.5/xskip=7/yskip=7/vlimits=58:65/hlimits=-16:6 vozocrtx[l=$1:$2@ave,d=5,k=1],vomecrty[l=$1:$2@ave,d=6,k=1],nav_lon[d=5],nav_lat[d=5]
+contour/ov/vlimits=58:65/hlimits=-16:6/nolabels/lev=(200)/d=14/color=green bathymetry
+polygon/ov/color=green/nolabels/thick=2 {-2,-2},{59.2,64.93}
+
+set viewport AMM60
+fill/vlimits=58:65/hlimits=-16:6/lev=(-inf)($4 $5 0.2)(inf) thetao[d=3,l=$1:$2@ave,k=1],nav_lon[d=1],nav_lat[d=1]
+vec/ov/length=0.5/xskip=15/yskip=15/vlimits=58:65/hlimits=-16:6 vozocrtx[l=$1:$2@ave,d=1,k=1],vomecrty[l=$1:$2@ave,d=2,k=1],nav_lon[d=1],nav_lat[d=1]
+contour/ov/vlimits=58:65/hlimits=-16:6/nolabels/lev=(200)/d=13/color=green bathymetry,lon,lat
+polygon/ov/color=green/nolabels/thick=2 {-2.25,-1.75},{59.2,64.9}
+
+frame/file="$3_surface_T_vec_shetland.gif"

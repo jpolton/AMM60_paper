@@ -6,8 +6,6 @@ Collection of functions to process AMM60 and obs data.
 Created on Fri 4 Dec 2015
 
 @author: jeff
-Changelog:
-25 Nov 16: diagnose_delta - process 3D or 1D spatial data
 """
 import numpy as np
 #import matplotlib.pyplot as plt
@@ -508,11 +506,8 @@ def delta_diagnose( profile, time_counter, depth, max_depth ):
     delta=np.squeeze(delta)
     delta_nt=np.squeeze(delta_nt)
 
-    import getpass
-    if getpass.getuser() not in ['jeff','jelt']:
-        print 'Karen: WARNING: I added a new output field (time_counter_runwin) to the delta_diagnose function. Check it still works/update your code and add any parent code to the list in the delta_diagnose function header. Delete this warning when done.'
-    
     return [delta, delta_nt, delta_var, time_datetime,  delta_runwin, delta_var_runwin, time_datetime_runwin, time_counter_runwin]
+
 
 def readMODELnc(filename, var):
     """ 
