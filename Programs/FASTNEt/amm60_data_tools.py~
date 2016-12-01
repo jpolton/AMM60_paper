@@ -6,8 +6,6 @@ Collection of functions to process AMM60 and obs data.
 Created on Fri 4 Dec 2015
 
 @author: jeff
-Changelog:
-25 Nov 16: diagnose_delta - process 3D or 1D spatial data
 """
 import numpy as np
 #import matplotlib.pyplot as plt
