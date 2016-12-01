@@ -6,7 +6,7 @@
 #
 # Origin: internaltidemap_AMM60_paper.ipynb
 # jpolton 2/11/16
-if(1):
+if(0):
     from netCDF4 import Dataset
     import numpy as np
     import numpy.ma as ma # masks
