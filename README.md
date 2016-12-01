@@ -58,6 +58,7 @@ Fixed `internaltidemap_AMM60_paper.ipynb` and `pycnocline_mod_obs_virtual_moorin
 **1 Dec**
 
 * Git commit. Hope the repo is not broken...
+* Repo OK. Tried writing function for running window. x100 slower!
 
 ---
 
