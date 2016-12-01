@@ -488,7 +488,7 @@ def delta_diagnose( profile, time_counter, depth, max_depth ):
             time_datetime_3day[count]  = (
                 time_datetime[doodbuff+i] # store middle times
                 )
-            i += 3
+            i += dt
 	    count += 1
 
     if(0):   # Old chunking. Discrete 3 day window  
@@ -503,7 +503,7 @@ def delta_diagnose( profile, time_counter, depth, max_depth ):
             pycn_depth_map_3day[i,:,:]    = np.nanmean( abs(delta_nt[i*winsiz:(i+1)*winsiz,:,:]), axis = 0)
             time_counter_3day[i,:] = time_counter[i*winsiz:(i+1)*winsiz]
             time_datetime_3day[i] = time_datetime[int(i*winsiz + winsiz // 2)] # store middle times
-            i += 1
+            i += dt
 
     print 'Chunking done.'
     # Do some relabelling for new notation that I want to implement in the above
@@ -514,12 +514,35 @@ def delta_diagnose( profile, time_counter, depth, max_depth ):
     time_counter_runwin = np.squeeze(time_counter_3day)
     delta=np.squeeze(delta)
     delta_nt=np.squeeze(delta_nt)
-
-    import getpass
-    if getpass.getuser() not in ['jeff','jelt']:
-        print 'Karen: WARNING: I added a new output field (time_counter_runwin) to the delta_diagnose function. Check it still works/update your code and add any parent code to the list in the delta_diagnose function header. Delete this warning when done.'
     
     return [delta, delta_nt, delta_var, time_datetime,  delta_runwin, delta_var_runwin, time_datetime_runwin, time_counter_runwin]
+
+
+def window_strat(profile, time_counter, H ):
+	"""
+	Output stratification averaged over running 3 day windows. Mirrors code in diagnose_delta. 
+	"""
+	rho_top = profile[:,0,:,:]
+	rho_bot = profile[:,2,:,:]
+
+	## Compute stratification 
+	################################
+	strat={};
+        strat = (rho_top - rho_bot) / H;
+
+	dt = 3 # index step for running mean output, i.e. every 3 hours
+        strat_3day    = np.zeros((chunkedsize, ny,nx))
+	count = 0 # initialise index counter for running window diagnostics
+	i = int(np.floor(winsiz/2)) # initialise index counter in hourly data
+        while (i - int(np.floor(winsiz/2)) < chunkedsize): 
+            strat_3day[count,:,:]    =  ( 
+                np.nanmean( strat[doodbuff+i-int(np.floor(winsiz/2)): doodbuff+i+int(np.ceil(winsiz/2)),:,:], axis = 0)
+                )
+            i += dt
+	    count += 1
+    return [strat_3day]
+
+
 
 def readMODELnc(filename, var):
     """ 
