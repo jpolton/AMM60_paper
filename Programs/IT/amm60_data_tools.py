@@ -529,18 +529,18 @@ def window_strat(profile, time_counter, H ):
 	## Compute stratification 
 	################################
 	strat={};
-        strat = (rho_top - rho_bot) / H;
+    strat = (rho_top - rho_bot) / H;
 
 	dt = 3 # index step for running mean output, i.e. every 3 hours
-        strat_3day    = np.zeros((chunkedsize, ny,nx))
+    strat_3day = np.zeros((chunkedsize, ny,nx))
 	count = 0 # initialise index counter for running window diagnostics
 	i = int(np.floor(winsiz/2)) # initialise index counter in hourly data
-        while (i - int(np.floor(winsiz/2)) < chunkedsize): 
-            strat_3day[count,:,:]    =  ( 
+    while (i - int(np.floor(winsiz/2)) < chunkedsize): 
+        strat_3day[count,:,:]    =  ( 
                 np.nanmean( strat[doodbuff+i-int(np.floor(winsiz/2)): doodbuff+i+int(np.ceil(winsiz/2)),:,:], axis = 0)
                 )
-            i += dt
-	    count += 1
+        i += dt
+        count += 1
     return [strat_3day]
 
 
