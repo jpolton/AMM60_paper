@@ -525,6 +525,10 @@ def window_strat(profile, time_counter, H ):
 	"""
 	rho_top = profile[:,0,:,:]
 	rho_bot = profile[:,2,:,:]
+    
+	[nt,ny,nx] = np.shape(rho_top) 
+	winsiz = 3*24 # Window Size (in pts) for chuncking operation. (Data is prob every hour)
+	chunkedsize = nt - winsiz - 2*doodbuff  # 3 day chunking. Number of time stamps in chunked data.
 
 	## Compute stratification 
 	################################
