@@ -6,7 +6,7 @@
 #
 # Origin: internaltidemap_AMM60_paper.ipynb
 # jpolton 2/11/16
-if(1):
+if(1): # Skip data loading and processing
     from netCDF4 import Dataset
     import numpy as np
     import numpy.ma as ma # masks
@@ -16,7 +16,8 @@ if(1):
     import glob # For getting file paths
     import copy # For deep copying variables
     from amm60_data_tools import NEMO_fancy_datestr # convert NEMO time 
-    from amm60_data_tools import delta_diagnose # compute pycnocline depth and variance
+    from amm60_data_tools import delta_diagnose # compute pycnocline depth and variance. Incl running window filter
+    from amm60_data_tools import window_strat # compute running window filtered stratification
 
     import matplotlib.colors as colors # colorbar with log distribution
     import matplotlib.pyplot as plt  # plotting
@@ -37,7 +38,7 @@ if(1):
         speedflag = True # only load in one file
     elif 'livljobs' in hostname and username in ['jeff','jelt']:
         dirroot = ''
-        speedflag = False # only load in one file
+        speedflag = True # only load in one file
     else:
         dirroot = ''
         speedflag = False
@@ -98,11 +99,7 @@ if(1):
         plt.xlim([-14,+14])
         plt.title(label)
 
-
-
-
-
-
+        
 
     ##############################################################################
     # Set stuff up
@@ -131,7 +128,6 @@ if(1):
     vardep = 'depth_rhopc'
     varnlev = 'nlev'
     print 'Diagnostics are calculated over the upper 200m'
-
 
 
     ##############################################################################
@@ -266,12 +262,6 @@ if(1):
     print 'Process data'
     print '############'
 
-
-    if(0):
-        ## Compute stratification
-        ################################
-        strat = {};
-        strat = (rho_top - rho_bot) / H;
         
     # Stack rho data into a 3 layer in z-direction, so data can be treated as profiles
     profile = rho_top[:,np.newaxis,:,:]
@@ -286,110 +276,79 @@ if(1):
     del rho_bar
     del rho_bot
     
-    ## Compute delta and variance properties
+    ## Compute delta and variance properties with 3 day windowing
     #################################
     print 'compute pycnocline fields - This is super slow. Make some tea.'
     max_depth = 0 # not used for 3D profiles
     [delta, delta_nt, internal_tide_map, time_datetime,  pycn_depth_map_3day, internal_tide_map_3day,
-                 time_datetime_3day, time_counter_3day, strat_3day] = delta_diagnose( profile, time_counter, H, max_depth )
-
-    # compute time-mean for plotting then clear space
-    mean_H = np.mean(H, axis=0)
-    del H
-    
-    # Process the SSH time data
-    ################################
-    # Note that the Error flag doesn't work and I haven't actually checked it. What happens with leap years etc...
-    [time_str_ST4, time_datetime_ST4, flag_err] = NEMO_fancy_datestr( time_counter_ST4, time_origin ) # SSH data
-
-
-
-    # Define masks
-    ###############################
-    [nt,ny,nx] = np.shape(delta)
-    mask_shelf = np.reshape( ma.masked_where(nlev[0,:,:] < 41, nlev[0,:,:]) ,(ny,nx) )
-
-    mask_land = np.reshape( ma.masked_where(nlev[0,:,:] == 0, np.ones((ny,nx))) ,(ny,nx) )
-
-    mask_200m = np.reshape( ma.masked_where(bathy[:,:] >= 200, np.ones((ny,nx))) ,(ny,nx) )
-
-    # Mask NW corner and west of 12W
-    m = (63.-56.)/(0.-(-14.)) # Gradient of corner slice
-    c = 63. # Slice lat intercept when lon=0
-    t2 = np.array(nav_lat - m*nav_lon - c >= 0 ,dtype=bool) # Mask NW corner slice
-    t1 = np.array(nav_lon < -12. , dtype=bool) # Mask west of 12W
-    mask_corners = np.reshape( ma.masked_where( t1+t2 , np.ones((ny,nx))) ,(ny,nx) ) # Boolean addition is OR not SUM
-
-    # Agregate masks associated with geographic domain of interest. Exclude strat mask.
-    mask = mask_land*mask_200m*mask_corners # Ones and zeros, wet domain mask
-
-def process_strat(strat,runwin_nt,ny,nx):
-    #[mask_strat, mean_strat, mean_mask_strat]=process_strat(strat,runwin_nt)
-    
-    print 'compute stratification masks - sloooooow'
-    mean_strat = np.mean( strat ,axis=0)
-    mean_mask_strat = ( mean_strat >= -2E-3 ).astype(int)*(-9999)   # Good vals: 0 / bad vals: -9999. 
-    #Plus mean_mask_strat to variable when plotting.
-    """
-    Compute 3 day  moving window average of stratification. CODE COPIED FROM amm60_data_tools.py
-    Should be moved into delta_diagnose?
-    Here compute strat mask using MEAN over 3 days. Could use a MAX(ABS(strat)) threshold.
-    """
-
-    ## Define the internal tide variance in 3 day chunks
-    ####################################################
-    i = 0 # initialise counter
-    """
-    Process over window  i-int(np.floor(winsiz/2)):i+int(np.ceil(winsiz/2))  
-    """
-    winsiz = 3*24 # Window Size (in pts) for chuncking operation. (Data is prob every hour)
-    chunkedsize = runwin_nt - winsiz  # 3 day chunking. Number of time stamps in chunked data
-    mask_strat = np.zeros((chunkedsize, ny,nx))
-    i = int(np.floor(winsiz/2)) # initialise counter. Reference to time axis as originally loaded
-    while (i - int(np.floor(winsiz/2)) < chunkedsize): 
-        mask_strat[i-int(np.floor(winsiz/2)),:,:] = (
-            np.nanmean( strat[i-int(np.floor(winsiz/2)): i+int(np.ceil(winsiz/2)),:,:], axis = 0)
-            )
-        i += 1
-
-    mask_strat = ( mask_strat >= -2E-3 ).astype(int)*(-9999)   # Good vals: 0 / bad vals: -9999. 
-    return [mask_strat, mean_strat, mean_mask_strat] 
-
-
-
-    profile = [] # Clear some memory
-
-    [runwin_nt,ny,nx] =  np.shape(internal_tide_map_3day[:,:,:]) # ny=nx=1 for 1d profiles
-    #[mask_strat, mean_strat, mean_mask_strat]=process_strat(strat,runwin_nt,ny,nx)
-
-    mask_strat = ( strat_3day >= -2E-3 ).astype(int)*(-9999)   # Good vals: 0 / bad vals: -9999. 
-    mean_strat = np.mean( strat_3day ,axis=0)
-    mean_mask_strat = ( mean_strat >= -2E-3 ).astype(int)*(-9999)   # Good vals: 0 / bad vals: -9999.
-
-    # Process sorted variances
-    ###############################
-    print 'process sorted variances'
-    runwin_nt = np.shape(internal_tide_map_3day[:,:,:])[0]
-
-    # Define new array to store sorted variance data
-    sortvar = np.zeros((runwin_nt,100)) # array [nt,% of finite area] of domain with var at value. 
-    for i in range(runwin_nt):
-        # Sort snapshot of data 
-        var = mask*copy.deepcopy(internal_tide_map_3day[i,:,:]) # function of [t=0,y,x] * (spatial mask)
-        var[mask*mask_strat[i,:,:]==-9999] = np.nan # nan for unstratified locations
-        tt = np.sort(np.log10(var), axis=None)
-
-        # Interpolate onto 100 points, excluding nans
-        not_nan = ~np.isnan(tt)
-        indices = np.arange(len(tt[not_nan]))
-        ind_short = np.linspace(0,np.sum(not_nan)-1,100)
-        sortvar[i,:] = np.interp(ind_short, indices, tt[not_nan])
-
-
+                 time_datetime_3day, time_counter_3day] = delta_diagnose( profile, time_counter, H, max_depth )
 
 #""""""
-#End of comment
+#End of comment to skip data loading and processing
 #""""""
+
+## Compute stratification with 3 day windowing
+#################################
+print 'Time window stratification - quite slow'
+[ strat_3day ] = window_strat( profile, time_counter, H )
+
+profile = [] # Clear some memory
+
+# compute time-mean for plotting then clear space
+mean_H = np.mean(H, axis=0)
+del H
+
+# Process the SSH time data
+################################
+# Note that the Error flag doesn't work and I haven't actually checked it. What happens with leap years etc...
+[time_str_ST4, time_datetime_ST4, flag_err] = NEMO_fancy_datestr( time_counter_ST4, time_origin ) # SSH data
+
+
+# Define masks
+###############################
+[nt,ny,nx] = np.shape(delta)
+mask_shelf = np.reshape( ma.masked_where(nlev[0,:,:] < 41, nlev[0,:,:]) ,(ny,nx) )
+mask_land = np.reshape( ma.masked_where(nlev[0,:,:] == 0, np.ones((ny,nx))) ,(ny,nx) )
+mask_200m = np.reshape( ma.masked_where(bathy[:,:] >= 200, np.ones((ny,nx))) ,(ny,nx) )
+
+# Mask NW corner and west of 12W
+m = (63.-56.)/(0.-(-14.)) # Gradient of corner slice
+c = 63. # Slice lat intercept when lon=0
+t2 = np.array(nav_lat - m*nav_lon - c >= 0 ,dtype=bool) # Mask NW corner slice
+t1 = np.array(nav_lon < -12. , dtype=bool) # Mask west of 12W
+mask_corners = np.reshape( ma.masked_where( t1+t2 , np.ones((ny,nx))) ,(ny,nx) ) # Boolean addition is OR not SUM
+
+# Agregate masks associated with geographic domain of interest. Exclude strat mask.
+mask = mask_land*mask_200m*mask_corners # Ones and zeros, wet domain mask
+
+[runwin_nt,ny,nx] =  np.shape(internal_tide_map_3day[:,:,:]) # ny=nx=1 for 1d profiles
+#[mask_strat, mean_strat, mean_mask_strat]=process_strat(strat,runwin_nt,ny,nx)
+
+mask_strat = ( strat_3day >= -2E-3 ).astype(int)*(-9999)   # Good vals: 0 / bad vals: -9999. 
+mean_strat = np.mean( strat_3day ,axis=0)
+mean_mask_strat = ( mean_strat >= -2E-3 ).astype(int)*(-9999)   # Good vals: 0 / bad vals: -9999.
+
+# Process sorted variances
+###############################
+print 'process sorted variances'
+runwin_nt = np.shape(internal_tide_map_3day[:,:,:])[0]
+
+# Define new array to store sorted variance data
+sortvar = np.zeros((runwin_nt,100)) # array [nt,% of finite area] of domain with var at value. 
+for i in range(runwin_nt):
+    # Sort snapshot of data 
+    var = mask*copy.deepcopy(internal_tide_map_3day[i,:,:]) # function of [t=0,y,x] * (spatial mask)
+    var[mask*mask_strat[i,:,:]==-9999] = np.nan # nan for unstratified locations
+    tt = np.sort(np.log10(var), axis=None)
+
+    # Interpolate onto 100 points, excluding nans
+    not_nan = ~np.isnan(tt)
+    indices = np.arange(len(tt[not_nan]))
+    ind_short = np.linspace(0,np.sum(not_nan)-1,100)
+    sortvar[i,:] = np.interp(ind_short, indices, tt[not_nan])
+
+
+
 
 ##############################################################################
 # Plot density and depth fields
