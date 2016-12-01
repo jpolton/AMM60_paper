@@ -521,6 +521,7 @@ def delta_diagnose( profile, time_counter, depth, max_depth ):
 def window_strat(profile, time_counter, H ):
 	"""
 	Output stratification averaged over running 3 day windows. Mirrors code in diagnose_delta. 
+	Called in internaltidemap_AMM60_paper.py
 	"""
 	rho_top = profile[:,0,:,:]
 	rho_bot = profile[:,2,:,:]
