@@ -529,6 +529,8 @@ def window_strat(profile, time_counter, H ):
 	[nt,ny,nx] = np.shape(rho_top) 
 	winsiz = 3*24 # Window Size (in pts) for chuncking operation. (Data is prob every hour)
 	chunkedsize = nt - winsiz - 2*doodbuff  # 3 day chunking. Number of time stamps in chunked data.
+	doodbuff = 19 # Doodson filter uses +/- 19 hours so 19 hours at start and end of timeseries are lost in the filter.
+
 
 	## Compute stratification 
 	################################
