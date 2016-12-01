@@ -467,14 +467,14 @@ def delta_diagnose( profile, time_counter, depth, max_depth ):
         Process over window  i-int(np.floor(winsiz/2)):i+int(np.ceil(winsiz/2))  
         """
         winsiz = 3*24 # Window Size (in pts) for chuncking operation. (Data is prob every hour)
-        chunkedsize = nt - winsiz - 2*doodbuff  # 3 day chunking. Number of time stamps in chunked data. Account for Doodson filter buffer annd running window size
+        chunkedsize = int(np.floor( (nt - winsiz - 2*doodbuff)/dt ))  # 3 day chunking. Number of time stamps in chunked data. Account for Doodson filter buffer annd running window size
         internal_tide_map_3day = np.zeros((chunkedsize, ny,nx))
         pycn_depth_map_3day    = np.zeros((chunkedsize, ny,nx))
         time_counter_3day      = np.zeros((chunkedsize, winsiz))
         time_datetime_3day  = np.array([datetime.datetime(1900,1,1) for loop in xrange(chunkedsize)]) # dummy datetime array
 	count = 0 # initialise index counter for running window diagnostics
 	i = int(np.floor(winsiz/2)) # initialise index counter in hourly data
-        while (i - int(np.floor(winsiz/2)) < chunkedsize): 
+        while (count < chunkedsize): 
             internal_tide_map_3day[count,:,:] = (
                 np.nanvar(delta[doodbuff+i-int(np.floor(winsiz/2)): doodbuff+i+int(np.ceil(winsiz/2)),:,:]
                 - delta_nt[doodbuff+i-int(np.floor(winsiz/2)): doodbuff+i+int(np.ceil(winsiz/2)),:,:], axis = 0)
