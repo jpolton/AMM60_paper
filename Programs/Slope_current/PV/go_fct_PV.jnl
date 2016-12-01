@@ -1,0 +1,35 @@
+!!! $1        $2    $3    $4    $5    $6      $7    $8    $9    $10
+!!! viewport  imin  imax  jmin  jmax  season  Tmin  Tmax  Lmin  Lmax
+
+LET zeta=(V[x=@ddc])-(U[y=@ddc])  ! relative vorticity
+let pi = 4*atan(1.0)  !! or acos(-1.0)
+let deg2rad = pi/180
+let omega = 2*pi/(24*60*60)
+let f=2*omega*sin(deg2rad*Y[g=nav_lat[d=4]]) !planetary V
+let rho_zero=1026 ! referece density
+let grad=DENSITY[z=@ddc] ! density gradient
+let PV = (grad*(zeta+f))/rho_zero * 10^6
+
+set viewport $1
+IF ($1%|AMM60>TRUE|*>FALSE%) THEN
+  fill/title="Potential Vorticity * 10^6"/vlimits=58.5:65/hlimits=-14:4/i=$2:$3/j=$4:$5/lev=(-inf)(-0.4 0.4 0.04)(inf)/nokey PV[l=$9:$10@ave,z=0:400@ave],nav_lon[d=4],nav_lat[d=4]
+  ppl shakey 1,,0.15,5; ppl fill
+  annotate/normalized/xpos=1.1/ypos=0.98 "PVU"
+ELSE
+  fill/title="Potential Vorticity * 10^6"/nokey/vlimits=58.5:65/hlimits=-14:4/i=$2:$3/j=$4:$5/lev=(-inf)(-0.4 0.4 0.04)(inf)/nokey PV[l=$9:$10@ave,z=0:400@ave],nav_lon[d=4],nav_lat[d=4]
+ENDIF
+contour/nolabels/ov/vlimits=58.5:65/hlimits=-14:4/i=$2:$3/j=$4:$5/lev=($7 $8 2) Temp[l=$9:$10@ave,z=0:400@ave],nav_lon[d=4],nav_lat[d=4]
+shade/ov/pal=grey/nolabels/lev=(0 10 1)/d=4 mbathy,nav_lon,nav_lat
+
+IF ($1%|NNA>TRUE|*>FALSE%) THEN
+  polygon/ov/color=black/nolabels {-7.09,-4.73},{58.48,64.92}
+ENDIF
+IF ($1%|AMM7>TRUE|*>FALSE%) THEN
+  polygon/ov/color=black/nolabels {-6,-6},{58.46,64.93}
+ENDIF
+IF ($1%|AMM60>TRUE|*>FALSE%) THEN
+  polygon/ov/color=black/nolabels {-6.12,-5.93},{58.46,64.96}
+ENDIF
+
+
+

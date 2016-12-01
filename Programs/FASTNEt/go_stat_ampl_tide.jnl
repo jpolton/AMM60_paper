@@ -1,0 +1,55 @@
+ ! NOAA/PMEL TMAP
+ ! FERRET v6.96  
+ ! Linux 2.6.32-573.7.1.el6.x86_64 64-bit - 12/02/15
+ ! 28-Nov-16 11:43     
+
+cancel data/all
+use "AMM60/mooring_ST1.nc"
+set var/bad=0 delta_3d_mod
+stat/l=271:671 abs(DELTA_MOD-DELTA_3d_MOD)
+stat/l=271:671 abs(DELTA_obs-DELTA_3d_obs)
+use "AMM7/mooring_ST1.nc"
+set var/bad=0 delta_3d_mod
+stat/l=271:671 abs(DELTA_MOD-DELTA_3d_MOD)
+use "NNA/mooring_ST1.nc"
+set var/bad=0 delta_3d_mod
+stat/l=319:719 abs(DELTA_MOD-DELTA_3d_MOD)
+pause
+
+cancel data/all
+use "AMM60/mooring_ST2.nc"
+set var/bad=0 delta_3d_mod
+stat/l=283:674 abs(DELTA_MOD-DELTA_3d_MOD)
+stat/l=283:674 abs(DELTA_obs-DELTA_3d_obs)
+use "AMM7/mooring_ST2.nc"
+set var/bad=0 delta_3d_mod
+stat/l=283:674 abs(DELTA_MOD-DELTA_3d_MOD)
+use "NNA/mooring_ST2.nc"
+set var/bad=0 delta_3d_mod
+stat/l=331:722 abs(DELTA_MOD-DELTA_3d_MOD)
+pause
+
+cancel data/all
+use "AMM60/mooring_ST4.nc"
+set var/bad=0 delta_3d_mod
+stat/l=360:678 abs(DELTA_MOD-DELTA_3d_MOD)
+stat/l=360:678 abs(DELTA_obs-DELTA_3d_obs)
+use "AMM7/mooring_ST4.nc"
+set var/bad=0 delta_3d_mod
+stat/l=360:678 abs(DELTA_MOD-DELTA_3d_MOD)
+use "NNA/mooring_ST4.nc"
+set var/bad=0 delta_3d_mod
+stat/l=408:726 abs(DELTA_MOD-DELTA_3d_MOD)
+pause
+
+cancel data/all
+use "AMM60/mooring_ST5.nc"
+set var/bad=0 delta_3d_mod
+stat/l=287:696 abs(DELTA_MOD-DELTA_3d_MOD)
+stat/l=287:696 abs(DELTA_obs-DELTA_3d_obs)
+use "AMM7/mooring_ST5.nc"
+set var/bad=0 delta_3d_mod
+stat/l=287:696 abs(DELTA_MOD-DELTA_3d_MOD)
+use "NNA/mooring_ST5.nc"
+set var/bad=0 delta_3d_mod
+stat/l=335:744 abs(DELTA_MOD-DELTA_3d_MOD)

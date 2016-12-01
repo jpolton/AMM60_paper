@@ -1,0 +1,77 @@
+cancel data/all
+set memory/size=1024
+pal light_centered
+
+set win/size=1.1
+set win/aspect=0.3
+define viewport/axes/x=0.05:0.3/y=0.19:0.96 NNA 
+define viewport/axes/x=0.35:0.6/y=0.19:0.96 AMM7
+define viewport/axes/x=0.65:0.9/y=0.19:0.96 AMM60
+ppl axlint 3 3 
+ppl axlsze 0.15 0.15
+set text/font=arial
+
+!!!!!!!!!!!! NNA !!!!!!!!!!!!11
+!! U !!
+pal light_centered
+cancel data/all
+use "/media/data1/NNA/2012_era/NNA_U_d05.des"
+use "/media/data1/NNA/2012_era/NNA_V_d05.des"
+use "/media/data1/NNA/2012_era/NNA_T_d05.des"
+use "/media/data1/NNA/Config_files/mesh_zgr.nc4"
+set var/bad=0 vozocrtx[d=1]
+set var/bad=0 vomecrty[d=2]
+set var/bad=0 votemper[d=3]
+set var/bad=0 vosaline[d=3]
+
+let U = vozocrtx[d=1]
+let V = vomecrty[d=2]
+let Temp = votemper[d=3]
+let S = vosaline[d=3]
+let density = rho_un(votemper[d=3],vosaline[d=3],nav_lev[d=4])
+
+!go go_fct_PV NNA 870 1150 530 690 $1 $2 $3 $4 $5
+go go_fct_PV NNA 870 1100 530 690 $1 $2 $3 $4 $5
+
+!!!!! AMM7 !!!!!
+cancel data/all
+use "/media/data1/AMM7/2012/AMM7_U_5d.des"
+use "/media/data1/AMM7/2012/AMM7_V_5d.des"
+use "/media/data1/AMM7/2012/AMM7_T_5d.des"
+use "/media/data1/AMM7/Config_files/mesh_mask_AMM7.nc"
+use "/media/data1/NNA/Config_files/mesh_zgr.nc4"
+set var/bad=0 vozocrtx[d=1]
+set var/bad=0 vomecrty[d=2]
+set var/bad=0 thetao[d=3]
+
+let U = zaxreplace_avg(vozocrtx[d=1],nav_lev[d=5],gdept_0[d=4])
+let V = zaxreplace_avg(vomecrty[d=2],nav_lev[d=5],gdept_0[d=4])
+let Temp = zaxreplace_avg(thetao[d=3],nav_lev[d=5],gdept_0[d=4])
+let Sal = zaxreplace_avg(so[d=3],nav_lev[d=5],gdept_0[d=4])
+let density = rho_un(Temp,Sal,nav_lev[d=5])
+
+!go go_fct_PV AMM7 30 250 200 380 $1 $2 $3 $4 $5
+go go_fct_PV AMM7 30 220 200 380 $1 $2 $3 $4 $5
+
+!!!!! AMM60 !!!!!
+cancel data/all
+set memory/size=1024
+use "/media/data1/AMM60/RUNS/RUN_nodiff_2012/AMM60_U_5d.des"
+use "/media/data1/AMM60/RUNS/RUN_nodiff_2012/AMM60_V_5d.des"
+use "/media/data1/AMM60/RUNS/RUN_nodiff_2012/AMM60_T_5d.des"
+use "/media/data1/AMM60/Config_files/mesh_zgr.nc"
+use "/media/data1/NNA/Config_files/mesh_zgr.nc4"
+set var/bad=0 vozocrtx[d=1]
+set var/bad=0 vomecrty[d=2]
+set var/bad=0 thetao[d=3]
+
+let U = zaxreplace_avg(vozocrtx[d=1],nav_lev[d=5],gdept_0[d=4])
+let V = zaxreplace_avg(vomecrty[d=2],nav_lev[d=5],gdept_0[d=4])
+let Temp = zaxreplace_avg(thetao[d=3],nav_lev[d=5],gdept_0[d=4])
+let Sal = zaxreplace_avg(so[d=3],nav_lev[d=5],gdept_0[d=4])
+let density = rho_un(Temp,Sal,nav_lev[d=5])
+
+!go go_fct_PV AMM60 250 870 1020 1440 $1 $2 $3 $4 $5
+go go_fct_PV AMM60 250 820 1020 1440 $1 $2 $3 $4 $5
+
+frame/file="$1_pv.gif"
