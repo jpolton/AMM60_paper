@@ -522,31 +522,46 @@ def window_strat(profile, time_counter, H ):
 	"""
 	Output stratification averaged over running 3 day windows. Mirrors code in diagnose_delta. 
 	Called in internaltidemap_AMM60_paper.py
+
+	TO DO:
+    Assumes same time_3day is processed elsewhere. Should probably write a generic
+    function to do this window averaging that accepts generalised function 
+    e.g. compute mean or variance of input fields.
+    
+    INPUT:
+    profile data (3D: z-t-y-x)
+    time_counter - NOT USED. seconds since 1950
+    depth - metres (+ve) from the surface (z=0). 
+        3D profile data: depth(t,y,x) is bathymetric depth.
+    
+    OUTPUT:
+    stratification (kg/m^4) - running window processed, outputs every dt input timesteps
+    
+    Usage:
+    [strat_runwin] = delta_diagnose( profile, time_counter, depth )
 	"""
+	dt = 3 # index step for running mean output, i.e. every 3 hours        
+	doodbuff = 19 # Doodson filter uses +/- 19 hours so 19 hours at start and end of timeseries are lost in the filter.
 	rho_top = profile[:,0,:,:]
 	rho_bot = profile[:,2,:,:]
-    
 	[nt,ny,nx] = np.shape(rho_top) 
 	winsiz = 3*24 # Window Size (in pts) for chuncking operation. (Data is prob every hour)
-	chunkedsize = nt - winsiz - 2*doodbuff  # 3 day chunking. Number of time stamps in chunked data.
-	doodbuff = 19 # Doodson filter uses +/- 19 hours so 19 hours at start and end of timeseries are lost in the filter.
-
+	chunkedsize = int(np.floor( (nt - winsiz - 2*doodbuff)/dt ))  # 3 day chunking. Number of time stamps in chunked data.
 
 	## Compute stratification 
 	################################
 	strat={}
 	strat = (rho_top - rho_bot) / H
-	dt = 3 # index step for running mean output, i.e. every 3 hours
 	strat_3day = np.zeros((chunkedsize, ny,nx))
 	count = 0 # initialise index counter for running window diagnostics
 	i = int(np.floor(winsiz/2)) # initialise index counter in hourly data
-	while (i - int(np.floor(winsiz/2)) < chunkedsize): 
+	while count < chunkedsize: 
 		strat_3day[count,:,:]    =  ( 
                 np.nanmean( strat[doodbuff+i-int(np.floor(winsiz/2)): doodbuff+i+int(np.ceil(winsiz/2)),:,:], axis = 0)
                 )
 		i += dt
 		count += 1
-	return [strat_3day]
+	return np.squeeze(strat_3day)
 
 
 
