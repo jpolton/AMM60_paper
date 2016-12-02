@@ -58,7 +58,13 @@ Fixed `internaltidemap_AMM60_paper.ipynb` and `pycnocline_mod_obs_virtual_moorin
 **1 Dec**
 
 * Git commit. Hope the repo is not broken...
+* Repo OK. Tried writing function for running window. x100 slower!
 
+---
+**2 Dec**
+
+* Finished std(delta) vs time cf spring neap phase figure. 
+* Tidied up .py and .ipynb files
 ---
 
 
