@@ -38,7 +38,7 @@ if(1): # Skip data loading and processing
         speedflag = True # only load in one file
     elif 'livljobs' in hostname and username in ['jeff','jelt']:
         dirroot = ''
-        speedflag = True # only load in one file
+        speedflag = False # only load in one file
     else:
         dirroot = ''
         speedflag = False
@@ -283,72 +283,74 @@ if(1): # Skip data loading and processing
     [delta, delta_nt, internal_tide_map, time_datetime,  pycn_depth_map_3day, internal_tide_map_3day,
                  time_datetime_3day, time_counter_3day] = delta_diagnose( profile, time_counter, H, max_depth )
 
+
+    ## Compute stratification with 3 day windowing
+    #################################
+    print 'Time window stratification - quite slow'
+    strat_3day = window_strat( profile, time_counter, H )
+
+
+
+
+    profile = [] # Clear some memory
+
+    # compute time-mean for plotting then clear space
+    mean_H = np.mean(H, axis=0)
+    del H
+
+    # Process the SSH time data
+    ################################
+    # Note that the Error flag doesn't work and I haven't actually checked it. What happens with leap years etc...
+    [time_str_ST4, time_datetime_ST4, flag_err] = NEMO_fancy_datestr( time_counter_ST4, time_origin ) # SSH data
+
+
+    # Define masks
+    ###############################
+    [nt,ny,nx] = np.shape(delta)
+    mask_shelf = np.reshape( ma.masked_where(nlev[0,:,:] < 41, nlev[0,:,:]) ,(ny,nx) )
+    mask_land = np.reshape( ma.masked_where(nlev[0,:,:] == 0, np.ones((ny,nx))) ,(ny,nx) )
+    mask_200m = np.reshape( ma.masked_where(bathy[:,:] >= 200, np.ones((ny,nx))) ,(ny,nx) )
+
+    # Mask NW corner and west of 12W
+    m = (63.-56.)/(0.-(-14.)) # Gradient of corner slice
+    c = 63. # Slice lat intercept when lon=0
+    t2 = np.array(nav_lat - m*nav_lon - c >= 0 ,dtype=bool) # Mask NW corner slice
+    t1 = np.array(nav_lon < -12. , dtype=bool) # Mask west of 12W
+    mask_corners = np.reshape( ma.masked_where( t1+t2 , np.ones((ny,nx))) ,(ny,nx) ) # Boolean addition is OR not SUM
+
+    # Agregate masks associated with geographic domain of interest. Exclude strat mask.
+    mask = mask_land*mask_200m*mask_corners # Ones and zeros, wet domain mask
+
+    [runwin_nt,ny,nx] =  np.shape(internal_tide_map_3day[:,:,:]) # ny=nx=1 for 1d profiles
+    #[mask_strat, mean_strat, mean_mask_strat]=process_strat(strat,runwin_nt,ny,nx)
+
+    mask_strat = ( strat_3day >= -2E-3 ).astype(int)*(-9999)   # Good vals: 0 / bad vals: -9999. 
+    mean_strat = np.mean( strat_3day ,axis=0)
+    mean_mask_strat = ( mean_strat >= -2E-3 ).astype(int)*(-9999)   # Good vals: 0 / bad vals: -9999.
+
+    # Process sorted variances
+    ###############################
+    print 'process sorted variances'
+    runwin_nt = np.shape(internal_tide_map_3day[:,:,:])[0]
+
+    # Define new array to store sorted variance data
+    sortvar = np.zeros((runwin_nt,100)) # array [nt,% of finite area] of domain with var at value. 
+    for i in range(runwin_nt):
+        # Sort snapshot of data 
+        var = mask*copy.deepcopy(internal_tide_map_3day[i,:,:]) # function of [t=0,y,x] * (spatial mask)
+        var[mask*mask_strat[i,:,:]==-9999] = np.nan # nan for unstratified locations
+        tt = np.sort(np.log10(var), axis=None)
+
+        # Interpolate onto 100 points, excluding nans
+        not_nan = ~np.isnan(tt)
+        indices = np.arange(len(tt[not_nan]))
+        ind_short = np.linspace(0,np.sum(not_nan)-1,100)
+        sortvar[i,:] = np.interp(ind_short, indices, tt[not_nan])
+
+
 #""""""
 #End of comment to skip data loading and processing
 #""""""
-
-## Compute stratification with 3 day windowing
-#################################
-print 'Time window stratification - quite slow'
-[ strat_3day ] = window_strat( profile, time_counter, H )
-
-profile = [] # Clear some memory
-
-# compute time-mean for plotting then clear space
-mean_H = np.mean(H, axis=0)
-del H
-
-# Process the SSH time data
-################################
-# Note that the Error flag doesn't work and I haven't actually checked it. What happens with leap years etc...
-[time_str_ST4, time_datetime_ST4, flag_err] = NEMO_fancy_datestr( time_counter_ST4, time_origin ) # SSH data
-
-
-# Define masks
-###############################
-[nt,ny,nx] = np.shape(delta)
-mask_shelf = np.reshape( ma.masked_where(nlev[0,:,:] < 41, nlev[0,:,:]) ,(ny,nx) )
-mask_land = np.reshape( ma.masked_where(nlev[0,:,:] == 0, np.ones((ny,nx))) ,(ny,nx) )
-mask_200m = np.reshape( ma.masked_where(bathy[:,:] >= 200, np.ones((ny,nx))) ,(ny,nx) )
-
-# Mask NW corner and west of 12W
-m = (63.-56.)/(0.-(-14.)) # Gradient of corner slice
-c = 63. # Slice lat intercept when lon=0
-t2 = np.array(nav_lat - m*nav_lon - c >= 0 ,dtype=bool) # Mask NW corner slice
-t1 = np.array(nav_lon < -12. , dtype=bool) # Mask west of 12W
-mask_corners = np.reshape( ma.masked_where( t1+t2 , np.ones((ny,nx))) ,(ny,nx) ) # Boolean addition is OR not SUM
-
-# Agregate masks associated with geographic domain of interest. Exclude strat mask.
-mask = mask_land*mask_200m*mask_corners # Ones and zeros, wet domain mask
-
-[runwin_nt,ny,nx] =  np.shape(internal_tide_map_3day[:,:,:]) # ny=nx=1 for 1d profiles
-#[mask_strat, mean_strat, mean_mask_strat]=process_strat(strat,runwin_nt,ny,nx)
-
-mask_strat = ( strat_3day >= -2E-3 ).astype(int)*(-9999)   # Good vals: 0 / bad vals: -9999. 
-mean_strat = np.mean( strat_3day ,axis=0)
-mean_mask_strat = ( mean_strat >= -2E-3 ).astype(int)*(-9999)   # Good vals: 0 / bad vals: -9999.
-
-# Process sorted variances
-###############################
-print 'process sorted variances'
-runwin_nt = np.shape(internal_tide_map_3day[:,:,:])[0]
-
-# Define new array to store sorted variance data
-sortvar = np.zeros((runwin_nt,100)) # array [nt,% of finite area] of domain with var at value. 
-for i in range(runwin_nt):
-    # Sort snapshot of data 
-    var = mask*copy.deepcopy(internal_tide_map_3day[i,:,:]) # function of [t=0,y,x] * (spatial mask)
-    var[mask*mask_strat[i,:,:]==-9999] = np.nan # nan for unstratified locations
-    tt = np.sort(np.log10(var), axis=None)
-
-    # Interpolate onto 100 points, excluding nans
-    not_nan = ~np.isnan(tt)
-    indices = np.arange(len(tt[not_nan]))
-    ind_short = np.linspace(0,np.sum(not_nan)-1,100)
-    sortvar[i,:] = np.interp(ind_short, indices, tt[not_nan])
-
-
-
 
 ##############################################################################
 # Plot density and depth fields
@@ -424,10 +426,9 @@ plotit_sub(nav_lon,nav_lat,var+mean_mask_strat,'-mean bulk stratification (kg/m^
 #var = np.log10(internal_tide_map*mask_land*mask_200m) 
 var = np.sqrt(internal_tide_map)*mask
 clim = [0., 10.]
-#plotit_sub(nav_lon,nav_lat,var+mean_mask_strat,'log10[pycnocline depth variance (m^2)]',clim,'224')
-plotit_sub(nav_lon,nav_lat,var+mean_mask_strat,'pycnocline depth tidal std (m)]',clim,'224')
+#plotit_sub(nav_lon,nav_lat,var+mean_mask_strat,'pycnocline depth tidal std (m)]',clim,'224')
 
-if(0): # Perahps plot std with a log colourscale     
+if(1): # Perahps plot std with a log colourscale     
     ax3 = fig.add_subplot(2,2,4)
     cs = ax3.pcolormesh(nav_lon,nav_lat,var+mean_mask_strat, cmap=plt.cm.gnuplot,
                         norm=colors.LogNorm(vmin=0.1, vmax=10))
@@ -442,9 +443,9 @@ if(0): # Perahps plot std with a log colourscale
 ##############################################################################
 # Plot pycnocline statistics in 3 day chunks
 ##############################################################################
-#for i in range(6,7):
+for i in range(6,7):
 #for i in range(nt/(24*3)):
-for i in range(np.size(time_counter_3day[:,:][0])):
+#for i in range(np.size(time_counter_3day[:,:][0])):
 
     # Find indices in SSH ST4 data that correspond to the IT data
     ind = [ii for ii in range(len(time_counter_ST4)) if time_counter_ST4[ii] in time_counter_3day[i,:]]
@@ -554,11 +555,12 @@ start = ax1.get_xlim()[0] + 0.5
 ax1.text(start, -0.025, 'a) SSH at ST4')
 
 
-
+## std vs time
+###############################
 ax2 = fig.add_subplot(412)
-msh = ax2.pcolormesh(time_datetime_3day,np.arange(100), std.T, 
+msh = ax2.contourf(time_datetime_3day,np.arange(100), std.T, [ 0.1, 0.5, 1,2,4,8,10],
                      cmap=plt.cm.gnuplot,
-                     norm=colors.LogNorm(vmin=1, vmax=10))
+                     norm=colors.LogNorm(vmin=.1, vmax=10))
 ax2.set_ylabel('domain coverage %')
 ax2.set_xlabel('time')
 ax2.set_xlim(dstart,dend)
@@ -570,13 +572,15 @@ ax2.set_xlim(dstart,dend)
 cbaxes = fig.add_axes([0.91, 0.125, 0.03, 0.775]) # [left, bottom, width, height]
 cb = fig.colorbar(msh, cax = cbaxes, orientation='vertical', extend="both") 
 # Fiddle with the colorbar ticks
-cb.set_ticks(range(1,11))
-cb.set_ticklabels(range(1,11))
+cb.set_ticks([  0.5, 1,2,4,8,10])
+cb.set_ticklabels([  0.5, 1,2,4,8,10])
+#cb.set_ticks(range(1,11))
+#cb.set_ticklabels(range(1,11))
 
 
 
 # text label
-start = ax2.get_xlim()[0] + 1.5
+start = ax2.get_xlim()[0] + 2.5
 ax2.text(start, 7, 'b) std($\delta$) (m)',color='w')
 
 
@@ -585,9 +589,9 @@ ax2.text(start, 7, 'b) std($\delta$) (m)',color='w')
 #######################################
 
 for i in [0,1]:
-    count = [10, 150]
+    count = [260, 324]
 #    count = [780, 980]
-    label = ['c)','d)'] # std($\delta$)'+time_datetime_3day[count[i]], ]
+    label = ['c) ','d) '] # std($\delta$)'+time_datetime_3day[count[i]], ]
     # Find indices in SSH ST4 data that correspond to the IT data
     ind = [ii for ii in range(len(time_counter_ST4)) if time_counter_ST4[ii] in time_counter_3day[count[i],:]]
     ax1.plot([time_datetime_ST4[ii] for ii in ind], depth_ST4[ind,-1,1,1], 'r')
@@ -595,15 +599,14 @@ for i in [0,1]:
 
     ## pycnocline depth tidal std
     ############################### 
-    var = copy.deepcopy(internal_tide_map_3day[count[i],:,:])
-    var[mask*mask_strat[i,:,:]==-999] = -999 # These will be off the bottom of the colorbar scale, assign grey 
-    std = np.power(10,var/2)
-
+    std = np.sqrt(copy.deepcopy(internal_tide_map_3day[count[i],:,:]))*mask
+    std[mask*mask_strat[i,:,:]==-9999] = 0.01 # These will be off the bottom of the colorbar scale, assign grey 
     
     ax3 = fig.add_subplot(2,2,3+i)
 
-    cs = ax3.pcolormesh(nav_lon,nav_lat,std*mask, cmap=plt.cm.gnuplot,
-                        norm=colors.LogNorm(vmin=1., vmax=10))
+#    cs = ax3.pcolormesh(nav_lon,nav_lat,std*mask+mask_strat[i,:,:], cmap=plt.cm.gnuplot,
+    cs = ax3.pcolormesh(nav_lon,nav_lat,std, cmap=plt.cm.gnuplot,
+                        norm=colors.LogNorm(vmin=.1, vmax=10))
     cs.cmap.set_under('grey')
     #cb = plt.colorbar(cs, extend="both") # Extend the upper end of the colorbar    
 
@@ -613,10 +616,13 @@ for i in [0,1]:
     ax3.set_xlim([-14,+14])
     #ax3.set_title('std($\delta$) (m)')
     #ax3.set_clim = [np.log10(1), np.log10(10)]
-    ax3.text(-13, 46, label[i]+' std($\delta$)') #+time_datetime_3day[count[i]])
+    #ax3.text(-13, 46, label[i]+' std($\delta$) '+str(time_datetime_3day[count[i]].strftime('%d %b %Y')))
 
-    ax3.text(-13, 55, 'IN PROGRESS', fontsize='36') #+time_datetime_3day[count[i]])
-
+    # Process datetime for analysis range
+    [time_str, time_datetime, flag_err] = NEMO_fancy_datestr( time_counter_3day[count[i],:], time_origin )
+    ax3.text(-13, 62, label[i]
+             +str(time_datetime[0].strftime('%d')+'-'+time_datetime[-1].strftime('%d %b %Y'))
+             +', std($\delta$) (m)')
 
     
 
