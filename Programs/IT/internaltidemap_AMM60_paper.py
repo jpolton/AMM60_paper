@@ -6,7 +6,7 @@
 #
 # Origin: internaltidemap_AMM60_paper.ipynb
 # jpolton 2/11/16
-if(1): # Skip data loading and processing
+if(1): # Change flag to skip data loading and processing step if already done.
     from netCDF4 import Dataset
     import numpy as np
     import numpy.ma as ma # masks
@@ -35,7 +35,7 @@ if(1): # Skip data loading and processing
 
     if 'livmaf' in hostname and username in ['jeff','jelt']:
         dirroot = '/Volumes'
-        speedflag = True # only load in one file
+        speedflag = True # only load in one file - speeds things up when debugging
     elif 'livljobs' in hostname and username in ['jeff','jelt']:
         dirroot = ''
         speedflag = False # only load in one file
@@ -62,9 +62,6 @@ if(1): # Skip data loading and processing
     ############################################
     def plotit_sub(x,y,var,label,clim,s_subplot):
         plt.subplot(int(s_subplot[0]), int(s_subplot[1]), int(s_subplot[2]) )
-    #    plt.pcolormesh(x, y, var, cmap='nipy_spectral')
-    #    plt.colorbar()
-
 
         cs = plt.pcolormesh(x,y,var, cmap=plt.cm.gnuplot)
         cs.cmap.set_under('grey')
@@ -83,13 +80,10 @@ if(1): # Skip data loading and processing
     def plotit_sub_log(x,y,var,label,clim,s_subplot):
         plt.subplot(int(s_subplot[0]), int(s_subplot[1]), int(s_subplot[2]) )
 
-    #    cs = plt.pcolormesh(x,y,var, cmap=plt.cm.gnuplot)
         cs = plt.pcolormesh(x,y,var, cmap=plt.cm.gnuplot,
                             norm=colors.LogNorm(vmin=clim[0], vmax=clim[1]))
         cs.cmap.set_under('grey')
         cb = plt.colorbar(cs, extend="max") # Extend the upper end of the colorbar    
-        #cb.set_ticks(range(clim[0],clim[1]+1))
-        #cb.set_ticklabels(range(clim[0],clim[1]+1))
         cb.set_ticks(range(1,11))
         cb.set_ticklabels(range(1,11))
 
@@ -106,27 +100,14 @@ if(1): # Skip data loading and processing
     ##############################################################################
     dirnameK = dirroot+'/projectsa/FASTNEt/kariho40/AMM60/RUNS/2010_2013/IT/' # 2010 diagnostics
     dirname = dirroot+'/projectsa/FASTNEt/jelt/AMM60/RUNS/2010_2013/IT/' # 2012 diagnostics
-    region = 'Celtic'
-    #region = 'Malin'
-    #region = 'NSea'
 
-    data_flag = '200m'
-
-    #filename = 'AMM60_1h_20100306_20100306_diagIT_grid_T_200m.nc' # Original (March) with mask problems
-    #filename = 'AMM60_1h_20100306_20100307_diagIT_grid_T.nc' # New (March) with fixed mask
-    #filename = 'AMM60_1h_20100704_20100708_diagIT_grid_T.nc' # July 2010
-    #filename = 'AMM60_1h_20120601_20120610_diagIT_grid_T.nc' # June A 2012
-    #filename = 'AMM60_1h_20120611_20120620_diagIT_grid_T.nc' # June B 2012
-    #filename = 'AMM60_1h_20120621_20120630_diagIT_grid_T.nc' # June C 2012
-    #filename = 'AMM60_1h_20120701_20120710_diagIT_grid_T.nc' # July A 2012
-    #filename = 'AMM60_1h_20120711_20120720_diagIT_grid_T.nc' # July B 2012
-    #filename = 'AMM60_1h_20120721_20120730_diagIT_grid_T.nc' # July C 2012
-    #filename = 'AMM60_1h_20120731_20120809_diagIT_grid_T.nc' # July D 2012
     varsurf = 'rhop_surf'
     varbot = 'rhopc_bot'
     varave = 'rhop_ave'
     vardep = 'depth_rhopc'
     varnlev = 'nlev'
+
+    data_flag = '200m' # loaded deep data is outputted at 200m or bed.
     print 'Diagnostics are calculated over the upper 200m'
 
 
@@ -183,8 +164,6 @@ if(1): # Skip data loading and processing
         rhop_surf = f.variables[varsurf][:] # (time_counter, deptht, y, x)
         rhop_ave = f.variables[varave][:] # (time_counter, deptht, y, x)
         rhop_bot = f.variables[varbot][:] # (time_counter, deptht, y, x)
-        #if data_flag == '200m':  # Shifted this to separate call since newer files don't have this variable
-        #    nlev = f.variables[varnlev][:] #(time_counter, y, x)
 
         # load in time and depth
         depth = f.variables[vardep][:] # (time_counter, deptht, y, x)
@@ -231,11 +210,8 @@ if(1): # Skip data loading and processing
 
     # Load is SSH data for ST4
     ##########################
-    #fullfilepath1 = '/projectsa/FASTNEt/kariho40/AMM60/RUNS/D376/AMM60_1h_20120504_20120610_fastnet_ST4_grid_T.nc'
-    #fullfilepath2 = '/projectsa/FASTNEt/kariho40/AMM60/RUNS/D376/AMM60_1h_20120611_20120702_fastnet_ST4_grid_T.nc'
-
-    # Though these files are from a different simulation they overlay the common periods very well, though not perfectly.
-    # It is good enough for these purposes which are visual.
+    # NB Though these files are from a different simulation they overlay the common periods very well
+    # It is good enough for these purposes which are visual, to indicate the spring neap phase
     fullfilepath1 = dirroot+'/projectsa/FASTNEt/kariho40/AMM60/RUNS/2010_2013/NO_DIFF/AMM60_1h_20120421_20120619_fastnet_ST4_grid_T.nc'
     fullfilepath2 = dirroot+'/projectsa/FASTNEt/kariho40/AMM60/RUNS/2010_2013/NO_DIFF/AMM60_1h_20120620_20120818_fastnet_ST4_grid_T.nc'
 
@@ -290,8 +266,6 @@ if(1): # Skip data loading and processing
     strat_3day = window_strat( profile, time_counter, H )
 
 
-
-
     profile = [] # Clear some memory
 
     # compute time-mean for plotting then clear space
@@ -322,16 +296,14 @@ if(1): # Skip data loading and processing
     mask = mask_land*mask_200m*mask_corners # Ones and zeros, wet domain mask
 
     [runwin_nt,ny,nx] =  np.shape(internal_tide_map_3day[:,:,:]) # ny=nx=1 for 1d profiles
-    #[mask_strat, mean_strat, mean_mask_strat]=process_strat(strat,runwin_nt,ny,nx)
 
-    mask_strat = ( strat_3day >= -2E-3 ).astype(int)*(-9999)   # Good vals: 0 / bad vals: -9999. 
+    mask_strat = ( strat_3day >= -3E-3 ).astype(int)*(-9999)   # Good vals: 0 / bad vals: -9999. 
     mean_strat = np.mean( strat_3day ,axis=0)
-    mean_mask_strat = ( mean_strat >= -2E-3 ).astype(int)*(-9999)   # Good vals: 0 / bad vals: -9999.
+    mean_mask_strat = ( mean_strat >= -3E-3 ).astype(int)*(-9999)   # Good vals: 0 / bad vals: -9999.
 
     # Process sorted variances
     ###############################
     print 'process sorted variances'
-    runwin_nt = np.shape(internal_tide_map_3day[:,:,:])[0]
 
     # Define new array to store sorted variance data
     sortvar = np.zeros((runwin_nt,100)) # array [nt,% of finite area] of domain with var at value. 
@@ -403,12 +375,10 @@ plt.suptitle(filename)
 ###############################
 var = mean_H*mask
 clim = [np.nanpercentile(var, 5), np.nanpercentile(var, 95)]
-#print 'subplot 1: percentile range:',clim
 plotit_sub(nav_lon,nav_lat,var,'Analysis depth range (m)',clim,'221')
 
 ## pycnocline depth
 ###############################
-#var = pycn_depth_map
 var = delta[0,:,:]*mask
 var[var>=200]=np.nan
 clim = [10, 50]
@@ -418,7 +388,7 @@ plotit_sub(nav_lon,nav_lat,var+mean_mask_strat,'pycnocline depth (m)',clim,'222'
 ## average bulk stratification
 ###############################
 var = np.mean( np.abs(strat_3day) ,axis=0)*mask
-clim = [2E-3, 0.02]
+clim = [3E-3, 0.02]
 plotit_sub(nav_lon,nav_lat,var+mean_mask_strat,'-mean bulk stratification (kg/m^4)',clim,'223')
 
 ## pycnocline depth tidal std
@@ -426,7 +396,6 @@ plotit_sub(nav_lon,nav_lat,var+mean_mask_strat,'-mean bulk stratification (kg/m^
 #var = np.log10(internal_tide_map*mask_land*mask_200m) 
 var = np.sqrt(internal_tide_map)*mask
 clim = [0., 10.]
-#plotit_sub(nav_lon,nav_lat,var+mean_mask_strat,'pycnocline depth tidal std (m)]',clim,'224')
 
 if(1): # Perahps plot std with a log colourscale     
     ax3 = fig.add_subplot(2,2,4)
@@ -443,9 +412,8 @@ if(1): # Perahps plot std with a log colourscale
 ##############################################################################
 # Plot pycnocline statistics in 3 day chunks
 ##############################################################################
-for i in range(6,7):
-#for i in range(nt/(24*3)):
-#for i in range(np.size(time_counter_3day[:,:][0])):
+#for i in range(6,7): # Demo output
+for i in range(np.size(time_counter_3day[:,:][0])):
 
     # Find indices in SSH ST4 data that correspond to the IT data
     ind = [ii for ii in range(len(time_counter_ST4)) if time_counter_ST4[ii] in time_counter_3day[i,:]]
@@ -467,14 +435,11 @@ for i in range(6,7):
     plt.xlabel('time')
     plt.ylabel('SSH above mean (m)')
     plt.title('ST4 SSH')
-    #plt.clim(hlim)
-
       
     ## pycnocline depth
     ###############################
     var = copy.deepcopy(pycn_depth_map_3day[i,:,:])
     clim = [0, 50]
-    #clim = copy.deepcopy([0, np.nanpercentile(var*mask, 95)])
     var[mask*mask_strat[i,:,:]==-9999] = -9999 # These will be off the bottom of the colorbar scale, assign grey 
     plotit_sub(nav_lon,nav_lat,var*mask,'pycnocline depth (m)',clim,'323')
 
@@ -486,17 +451,12 @@ for i in range(6,7):
     plt.ylabel('pycnocline depth (m)')
     plt.ylim(clim)
     plt.xlim(0,3E5)
-
-    
     
     ## pycnocline depth variance
     ###############################    
     var = copy.deepcopy(internal_tide_map_3day[i,:,:])
     clim = [0.1, 10]
-    #clim = [np.log10(1), np.log10(30)]
-    #clim = copy.deepcopy([0, np.nanpercentile(var*mask, 95)])
     var[mask*mask_strat[i,:,:]==-9999] = -9999 # These will be off the bottom of the colorbar scale, assign grey 
-    #plotit_sub_log(nav_lon,nav_lat,np.log10(var)*mask,'log10[pycnocline depth variance(m)]',clim,'324')
 
     var = np.sqrt(internal_tide_map_3day[i,:,:])*mask
     clim = [0., 10.]
@@ -505,13 +465,11 @@ for i in range(6,7):
 
     ## pycnocline depth variance histogram
     ###############################
-    plt.subplot(3,2,6)
-    #plt.plot( np.sort(internal_tide_map_3day[i,:,:]*mask, axis=None) )
-    #plt.ylabel('pycnocline depth variance (m)')  
-    plt.plot( np.sort(np.log10(internal_tide_map_3day[i,:,:])*mask, axis=None) )
-    plt.ylabel('log10[pycnocline depth variance (m)]')  
+    plt.subplot(3,2,6) 
+    plt.plot( np.sort(0.5*np.log10(internal_tide_map_3day[i,:,:])*mask, axis=None) )
+    plt.ylabel('log10[pycnocline depth tidal std (m)]')  
     plt.xlabel('sorted grid box index')
-    plt.ylim(clim)
+    plt.ylim([np.log10(0.1),np.log10(10)])
     plt.xlim(0,3E5)
         
 
@@ -548,7 +506,6 @@ ax1.plot(time_datetime_ST4, depth_ST4[:,-1,1,1])
 dstart = datetime.datetime(2012,6,1)
 dend = datetime.datetime(2012,8,9)
 ax1.set_xlim(dstart, dend)
-#plt.xlabel('time')
 ax1.set_ylabel('SSH above mean (m)')
 # text label
 start = ax1.get_xlim()[0] + 0.5
@@ -564,20 +521,13 @@ msh = ax2.contourf(time_datetime_3day,np.arange(100), std.T, [ 0.1, 0.5, 1,2,4,8
 ax2.set_ylabel('domain coverage %')
 ax2.set_xlabel('time')
 ax2.set_xlim(dstart,dend)
-#msh.set_clim(0,np.log10(30))
 
 # Now adding the colorbar
-#cbaxes = fig.add_axes([0.13, -0.02, 0.77, 0.03]) # [left, bottom, width, height]
-#cb = fig.colorbar(msh, cax = cbaxes, orientation='horizontal') 
 cbaxes = fig.add_axes([0.91, 0.125, 0.03, 0.775]) # [left, bottom, width, height]
 cb = fig.colorbar(msh, cax = cbaxes, orientation='vertical', extend="both") 
 # Fiddle with the colorbar ticks
-cb.set_ticks([  0.5, 1,2,4,8,10])
-cb.set_ticklabels([  0.5, 1,2,4,8,10])
-#cb.set_ticks(range(1,11))
-#cb.set_ticklabels(range(1,11))
-
-
+cb.set_ticks([ 0.5, 1,2,4,8,10])
+cb.set_ticklabels([ 0.5, 1,2,4,8,10])
 
 # text label
 start = ax2.get_xlim()[0] + 2.5
@@ -590,8 +540,7 @@ ax2.text(start, 7, 'b) std($\delta$) (m)',color='w')
 
 for i in [0,1]:
     count = [260, 324]
-#    count = [780, 980]
-    label = ['c) ','d) '] # std($\delta$)'+time_datetime_3day[count[i]], ]
+    label = ['c) ','d) ']
     # Find indices in SSH ST4 data that correspond to the IT data
     ind = [ii for ii in range(len(time_counter_ST4)) if time_counter_ST4[ii] in time_counter_3day[count[i],:]]
     ax1.plot([time_datetime_ST4[ii] for ii in ind], depth_ST4[ind,-1,1,1], 'r')
@@ -603,20 +552,14 @@ for i in [0,1]:
     std[mask*mask_strat[i,:,:]==-9999] = 0.01 # These will be off the bottom of the colorbar scale, assign grey 
     
     ax3 = fig.add_subplot(2,2,3+i)
-
-#    cs = ax3.pcolormesh(nav_lon,nav_lat,std*mask+mask_strat[i,:,:], cmap=plt.cm.gnuplot,
     cs = ax3.pcolormesh(nav_lon,nav_lat,std, cmap=plt.cm.gnuplot,
                         norm=colors.LogNorm(vmin=.1, vmax=10))
     cs.cmap.set_under('grey')
-    #cb = plt.colorbar(cs, extend="both") # Extend the upper end of the colorbar    
 
     ax3.set_ylabel('lat')
     ax3.set_xlabel('lon')
     ax3.set_ylim([+45,+63])
     ax3.set_xlim([-14,+14])
-    #ax3.set_title('std($\delta$) (m)')
-    #ax3.set_clim = [np.log10(1), np.log10(10)]
-    #ax3.text(-13, 46, label[i]+' std($\delta$) '+str(time_datetime_3day[count[i]].strftime('%d %b %Y')))
 
     # Process datetime for analysis range
     [time_str, time_datetime, flag_err] = NEMO_fancy_datestr( time_counter_3day[count[i],:], time_origin )
@@ -625,8 +568,8 @@ for i in [0,1]:
              +', std($\delta$) (m)')
 
     
-
 # Save output
 ###############################
-fname = dirroot+'/scratch/jelt/tmp/internaltidemap_std.png'
+#fname = dirroot+'/scratch/jelt/tmp/internaltidemap_std.png'
+fname = 'internaltidemap_std.png'
 plt.savefig(fname)
