@@ -57,16 +57,17 @@ Fixed `internaltidemap_AMM60_paper.ipynb` and `pycnocline_mod_obs_virtual_moorin
 ---
 **1 Dec**
 
-* Git commit. Hope it is not broken. 
+* Git commit. Hope the repo is not broken...
+* Repo OK. Tried writing function for running window. x100 slower!
 
+---
+**2 Dec**
+
+* Finished std(delta) vs time cf spring neap phase figure. 
+* Tidied up .py and .ipynb files
 ---
 
 
 **To-do**
+* writing
 
-`internaltidemap_AMM60_paper.ipynb`:
-* strat does not vary with time
-* grey mask issue not working
-
-`diagnose_delta from amm60_data_tools.py`:
-KG: make sure it still works for your FFT code

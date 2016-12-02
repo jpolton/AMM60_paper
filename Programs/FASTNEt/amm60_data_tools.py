@@ -6,6 +6,8 @@ Collection of functions to process AMM60 and obs data.
 Created on Fri 4 Dec 2015
 
 @author: jeff
+Changelog:
+25 Nov 16: diagnose_delta - process 3D or 1D spatial data
 """
 import numpy as np
 #import matplotlib.pyplot as plt
@@ -389,7 +391,9 @@ def delta_diagnose( profile, time_counter, depth, max_depth ):
 
         temp_top = np.zeros(nt)
         temp_top[:] = profile[0, :]
-        
+    
+    	dt = 1 # index step for running mean output, i.e. hourly
+
         ## Compute delta. 1D. 
         # depth is constant, temp values vary in time
         ################################
@@ -407,6 +411,8 @@ def delta_diagnose( profile, time_counter, depth, max_depth ):
         ################################
         delta={};
         delta = np.abs(depth*( rho_bot - rho_bar) / (rho_top - rho_bot))
+    	
+	dt = 3 # index step for running mean output, i.e. every 3 hours
     
     else:
         print "Am not ready for data with these dimensions"
@@ -440,6 +446,7 @@ def delta_diagnose( profile, time_counter, depth, max_depth ):
     ## Apply DoodsonX0 filter
     # For this function the time is assumed to be hourly
     delta_nt = doodsonX0(time_counter,delta);
+    doodbuff = 19 # Doodson filter uses +/- 19 hours so 19 hours at start and end of timeseries are lost in the filter.
     ## Define the internal tide variance
     ################################
     internal_tide_map = np.nanvar(delta - delta_nt, axis = 0)
@@ -460,41 +467,29 @@ def delta_diagnose( profile, time_counter, depth, max_depth ):
         Process over window  i-int(np.floor(winsiz/2)):i+int(np.ceil(winsiz/2))  
         """
         winsiz = 3*24 # Window Size (in pts) for chuncking operation. (Data is prob every hour)
-        chunkedsize = nt - winsiz  # 3 day chunking. Number of time stamps in chunked data
+        chunkedsize = int(np.floor( (nt - winsiz - 2*doodbuff)/dt ))  # 3 day chunking. Number of time stamps in chunked data. Account for Doodson filter buffer annd running window size
         internal_tide_map_3day = np.zeros((chunkedsize, ny,nx))
         pycn_depth_map_3day    = np.zeros((chunkedsize, ny,nx))
         time_counter_3day      = np.zeros((chunkedsize, winsiz))
         time_datetime_3day  = np.array([datetime.datetime(1900,1,1) for loop in xrange(chunkedsize)]) # dummy datetime array
-        i = int(np.floor(winsiz/2)) # initialise counter. Reference to time axis as originally loaded
-        while (i - int(np.floor(winsiz/2)) < chunkedsize): 
-            internal_tide_map_3day[i-int(np.floor(winsiz/2)),:,:] = (
-                np.nanvar(delta[i-int(np.floor(winsiz/2)): i+int(np.ceil(winsiz/2)),:,:]
-                - delta_nt[i-int(np.floor(winsiz/2)):i+int(np.ceil(winsiz/2)),:,:], axis = 0)
-                )
-            pycn_depth_map_3day[i-int(np.floor(winsiz/2)),:,:]    =  ( 
-                np.nanmean( abs(delta_nt[i-int(np.floor(winsiz/2)): i+int(np.ceil(winsiz/2)),:,:]), axis = 0)
-                )
-            time_counter_3day[i-int(np.floor(winsiz/2)),:] = (
-                time_counter[i-int(np.floor(winsiz/2)): i+int(np.ceil(winsiz/2))]
-                )
-            time_datetime_3day[i-int(np.floor(winsiz/2))]  = (
-                time_datetime[i] # store middle times
-                )
-            i += 1
-
-    if(0):   # Old chunking. Discrete 3 day window  
-        winsiz = 3*24 # Window Size (in pts) for chuncking operation. (Data is prob every hour)
-        chunkedsize = int(nt/winsiz) # 3 day chunking. Number of time stamps in chunked data
-        internal_tide_map_3day = np.zeros((chunkedsize, ny,nx))
-        pycn_depth_map_3day    = np.zeros((chunkedsize, ny,nx))
-        time_counter_3day      = np.zeros((chunkedsize, winsiz))
-        time_datetime_3day  = np.array([datetime.datetime(1900,1,1) for loop in xrange(chunkedsize)]) # dummy datetime array
-        while (i < chunkedsize):
-            internal_tide_map_3day[i,:,:] = np.nanvar(delta[i*winsiz:(i+1)*winsiz,:,:]  - delta_nt[i*winsiz:(i+1)*winsiz,:,:], axis = 0)
-            pycn_depth_map_3day[i,:,:]    = np.nanmean( abs(delta_nt[i*winsiz:(i+1)*winsiz,:,:]), axis = 0)
-            time_counter_3day[i,:] = time_counter[i*winsiz:(i+1)*winsiz]
-            time_datetime_3day[i] = time_datetime[int(i*winsiz + winsiz // 2)] # store middle times
-            i += 1
+        count = 0 # initialise index counter for running window diagnostics
+        i = int(np.floor(winsiz/2)) # initialise index counter in hourly data
+        while (count < chunkedsize): 
+            internal_tide_map_3day[count,:,:] = (
+                np.nanvar(delta[doodbuff+i-int(np.floor(winsiz/2)): doodbuff+i+int(np.ceil(winsiz/2)),:,:]
+                          - delta_nt[doodbuff+i-int(np.floor(winsiz/2)): doodbuff+i+int(np.ceil(winsiz/2)),:,:], axis = 0)
+            )
+            pycn_depth_map_3day[count,:,:]    =  ( 
+                np.nanmean( abs(delta_nt[doodbuff+i-int(np.floor(winsiz/2)): doodbuff+i+int(np.ceil(winsiz/2)),:,:]), axis = 0)
+            )
+            time_counter_3day[count,:] = (
+                time_counter[doodbuff+i-int(np.floor(winsiz/2)): doodbuff+i+int(np.ceil(winsiz/2))]
+            )
+            time_datetime_3day[count]  = (
+                time_datetime[doodbuff+i] # store middle times
+            )
+            i += dt
+            count += 1
 
     print 'Chunking done.'
     # Do some relabelling for new notation that I want to implement in the above
@@ -505,8 +500,55 @@ def delta_diagnose( profile, time_counter, depth, max_depth ):
     time_counter_runwin = np.squeeze(time_counter_3day)
     delta=np.squeeze(delta)
     delta_nt=np.squeeze(delta_nt)
-
+    
     return [delta, delta_nt, delta_var, time_datetime,  delta_runwin, delta_var_runwin, time_datetime_runwin, time_counter_runwin]
+
+
+def window_strat(profile, time_counter, H ):
+	"""
+	Output stratification averaged over running 3 day windows. Mirrors code in diagnose_delta. 
+	Called in internaltidemap_AMM60_paper.py
+
+	TO DO:
+    Assumes same time_3day is processed elsewhere. Should probably write a generic
+    function to do this window averaging that accepts generalised function 
+    e.g. compute mean or variance of input fields.
+    
+    INPUT:
+    profile data (3D: z-t-y-x)
+    time_counter - NOT USED. seconds since 1950
+    depth - metres (+ve) from the surface (z=0). 
+        3D profile data: depth(t,y,x) is bathymetric depth.
+    
+    OUTPUT:
+    stratification (kg/m^4) - running window processed, outputs every dt input timesteps
+    
+    Usage:
+    [strat_runwin] = delta_diagnose( profile, time_counter, depth )
+	"""
+	dt = 3 # index step for running mean output, i.e. every 3 hours        
+	doodbuff = 19 # Doodson filter uses +/- 19 hours so 19 hours at start and end of timeseries are lost in the filter.
+	rho_top = profile[:,0,:,:]
+	rho_bot = profile[:,2,:,:]
+	[nt,ny,nx] = np.shape(rho_top) 
+	winsiz = 3*24 # Window Size (in pts) for chuncking operation. (Data is prob every hour)
+	chunkedsize = int(np.floor( (nt - winsiz - 2*doodbuff)/dt ))  # 3 day chunking. Number of time stamps in chunked data.
+
+	## Compute stratification 
+	################################
+	strat={}
+	strat = (rho_top - rho_bot) / H
+	strat_3day = np.zeros((chunkedsize, ny,nx))
+	count = 0 # initialise index counter for running window diagnostics
+	i = int(np.floor(winsiz/2)) # initialise index counter in hourly data
+	while count < chunkedsize: 
+		strat_3day[count,:,:]    =  ( 
+                np.nanmean( strat[doodbuff+i-int(np.floor(winsiz/2)): doodbuff+i+int(np.ceil(winsiz/2)),:,:], axis = 0)
+                )
+		i += dt
+		count += 1
+	return np.squeeze(strat_3day)
+
 
 
 def readMODELnc(filename, var):
