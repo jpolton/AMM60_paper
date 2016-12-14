@@ -2,3 +2,6 @@ Programs/Tidal_analysis
 Programs/Transport
 Programs/SST
 *.nc
+ferret*
+*~
+.gitignore

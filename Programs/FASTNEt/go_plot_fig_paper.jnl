@@ -9,11 +9,11 @@ define viewport/axes/x=0.1:0.85/y=0.51:0.69 VAMM7
 define viewport/axes/x=0.1:0.85/y=0.29:0.47 Vamm
 define viewport/axes/x=0.1:0.85/y=0.07:0.25 Vobs
 define axis/t="01-JUN-2012 00:30":"30-JUN-2012 23:30":1/units=hours/npoints=720 taxAMM7
-define axis/t="02-JUN-2012 10:30":"29-JUN-2012 10:30":1/units=hours/npoints=720 taxAMM73d
+define axis/t="02-JUN-2012 10:30":"29-JUN-2012 10:30":1/units=hours/npoints=720 taxAMM7nt
 define axis/t="01-JUN-2012 00:30":"03-JUL-2012 21:30":1/npoints=790/units=hours taxAMM60
-define axis/t="02-JUN-2012 10:31":"29-JUN-2012 10:31"/npoints=10/units=hours taxAMM603d
+define axis/t="02-JUN-2012 10:31":"29-JUN-2012 10:31"/npoints=10/units=hours taxAMM60nt
 define axis/t="30-MAY-2012 00:30":"01-JUL-2012 21:30":1/npoints=790/units=hours taxNNA
-define axis/t="30-MAY-2012 10:31":"29-JUN-2012 10:31"/npoints=10/units=hours taxNNA3d
+define axis/t="30-MAY-2012 10:31":"29-JUN-2012 10:31"/npoints=10/units=hours taxNNAnt
 pal rnb2
 set text/font=arial
 
@@ -21,12 +21,12 @@ set text/font=arial
 use "/media/data1/AMM60/FASTNEt/NNA/mooring_ST1.nc"
 use "/media/data1/AMM60/FASTNEt/AMM7/mooring_ST1.nc"
 use "/media/data1/AMM60/FASTNEt/AMM60/mooring_ST1.nc"
-set var/bad=0 delta_3d_mod[d=1]
-set var/bad=0 delta_3d_obs[d=1]
-set var/bad=0 delta_3d_mod[d=2]
-set var/bad=0 delta_3d_obs[d=2]
-set var/bad=0 delta_3d_mod[d=3]
-set var/bad=0 delta_3d_obs[d=3]
+set var/bad=0 delta_nt_mod[d=1]
+set var/bad=0 delta_nt_obs[d=1]
+set var/bad=0 delta_nt_mod[d=2]
+set var/bad=0 delta_nt_obs[d=2]
+set var/bad=0 delta_nt_mod[d=3]
+set var/bad=0 delta_nt_obs[d=3]
 
 set viewport VNNA
 fill/set_up/d=1/nolabels/vlimits=0:120/t="12-JUN-2012":"29-JUN-2012"/lev=(-inf)(11.5 14 0.1)(inf) temp_mod[gt=taxnna@asn,z=0:120]
@@ -37,7 +37,7 @@ annotate/size=0.15/normalized/xpos=0.87/ypos=0.85 NNA
 set text/color=black
 annotate/normalized/xpos=0.02/ypos=1.1 "a) St1"
 plot/thick=1.5/line/ov/nolabels/color=black/line/t="12-JUN-2012":"29-JUN-2012" delta_mod[d=1,gt=taxnna@asn]
-plot/thick=1.5/line/ov/nolabels/color=white/line/t="12-JUN-2012":"29-JUN-2012" delta_3d_mod[d=1,gt=taxnna@asn]
+plot/thick=1.5/line/ov/nolabels/color=white/line/t="12-JUN-2012":"29-JUN-2012" delta_nt_mod[d=1,gt=taxnna@asn]
 
 set viewport VAMM7
 fill/set_up/d=2/nolabels/vlimits=0:120/t=12-JUN-2012:29-JUN-2012/lev=(-inf)(11.5 14 0.1)(inf) temp_mod[z=0:120,gt=taxamm7@asn]
@@ -47,7 +47,7 @@ set text/color=white
 annotate/size=0.15/normalized/xpos=0.87/ypos=0.85 AMM7
 set text/color=black
 plot/thick=1.5/line/ov/nolabels/color=black/t="12-JUN-2012":"29-JUN-2012" delta_mod[d=2,gt=taxamm7@asn]
-plot/thick=1.5/line/ov/nolabels/color=white/t="12-JUN-2012":"29-JUN-2012" delta_3d_mod[d=2,gt=taxamm7@asn]
+plot/thick=1.5/line/ov/nolabels/color=white/t="12-JUN-2012":"29-JUN-2012" delta_nt_mod[d=2,gt=taxamm7@asn]
 
 set viewport Vamm
 fill/d=3/set_up/nolabels/vlimits=0:120/t=12-JUN-2012:29-JUN-2012/lev=(-inf)(11.5 14 0.1)(inf) temp_mod[z=0:120,gt=taxamm60@asn]
@@ -60,7 +60,7 @@ annotate/size=0.15/normalized/xpos=0.87/ypos=0.85 AMM60
 set text/color=black
 ppl list shakey
 plot/thick=1.5/line/ov/nolabels/color=black/t="12-JUN-2012":"29-JUN-2012" delta_mod[d=3,gt=taxamm60@asn]
-plot/thick=1.5/line/ov/nolabels/color=white/t="12-JUN-2012":"29-JUN-2012" delta_3d_mod[d=3,gt=taxamm60@asn]
+plot/thick=1.5/line/ov/nolabels/color=white/t="12-JUN-2012":"29-JUN-2012" delta_nt_mod[d=3,gt=taxamm60@asn]
 
 set viewport Vobs
 fill/d=3/set_up/nolabels/vlimits=0:120/t=12-JUN-2012:29-JUN-2012/lev=(-inf)(11.5 14 0.1)(inf) temp_obs[z=0:120,gt=taxamm60@asn]
@@ -69,7 +69,8 @@ set text/color=white
 annotate/size=0.15/normalized/xpos=0.87/ypos=0.85 OBS
 set text/color=black
 plot/thick=1.5/line/ov/nolabels/color=black/t="12-JUN-2012":"29-JUN-2012" delta_obs[d=3,gt=taxamm60@asn]
-plot/thick=1.5/line/ov/nolabels/color=white/t="12-JUN-2012":"29-JUN-2012" delta_3d_obs[d=3,gt=taxamm60@asn]
+pause
+plot/thick=1.5/line/ov/nolabels/color=white/t="12-JUN-2012":"29-JUN-2012" delta_nt_obs[d=3,gt=taxamm60@asn]
 
 frame/file="FIGURES/ST1_temp.png" /ypixels=2250
 cancel data/all
@@ -78,12 +79,12 @@ cancel data/all
 use "/media/data1/AMM60/FASTNEt/NNA/mooring_ST2.nc"
 use "/media/data1/AMM60/FASTNEt/AMM7/mooring_ST2.nc"
 use "/media/data1/AMM60/FASTNEt/AMM60/mooring_ST2.nc"
-set var/bad=0 delta_3d_mod[d=1]
-set var/bad=0 delta_3d_obs[d=1]
-set var/bad=0 delta_3d_mod[d=2]
-set var/bad=0 delta_3d_obs[d=2]
-set var/bad=0 delta_3d_mod[d=3]
-set var/bad=0 delta_3d_obs[d=3]
+set var/bad=0 delta_nt_mod[d=1]
+set var/bad=0 delta_nt_obs[d=1]
+set var/bad=0 delta_nt_mod[d=2]
+set var/bad=0 delta_nt_obs[d=2]
+set var/bad=0 delta_nt_mod[d=3]
+set var/bad=0 delta_nt_obs[d=3]
 
 set viewport VNNA
 fill/set_up/d=1/nolabels/vlimits=0:120/t="12-JUN-2012":"29-JUN-2012"/lev=(-inf)(11.5 14 0.1)(inf) temp_mod[gt=taxnna@asn,z=0:120]
@@ -94,7 +95,7 @@ annotate/size=0.15/normalized/xpos=0.87/ypos=0.85 NNA
 set text/color=black
 annotate/normalized/xpos=0.02/ypos=1.1 "b) St2"
 plot/thick=1.5/line/ov/nolabels/color=black/t="12-JUN-2012":"29-JUN-2012" delta_mod[d=1,gt=taxnna@asn]
-plot/thick=1.5/line/ov/nolabels/color=white/t="12-JUN-2012":"29-JUN-2012" delta_3d_mod[d=1,gt=taxnna@asn]
+plot/thick=1.5/line/ov/nolabels/color=white/t="12-JUN-2012":"29-JUN-2012" delta_nt_mod[d=1,gt=taxnna@asn]
 
 set viewport VAMM7
 fill/set_up/d=2/nolabels/vlimits=0:120/t=12-JUN-2012:29-JUN-2012/lev=(-inf)(11.5 14 0.1)(inf) temp_mod[z=0:120,gt=taxamm7@asn]
@@ -104,7 +105,7 @@ set text/color=white
 annotate/size=0.15/normalized/xpos=0.87/ypos=0.85 AMM7
 set text/color=black
 plot/thick=1.5/line/ov/nolabels/color=black/t="12-JUN-2012":"29-JUN-2012" delta_mod[d=2,gt=taxamm7@asn]
-plot/thick=1.5/line/ov/nolabels/color=white/t="12-JUN-2012":"29-JUN-2012" delta_3d_mod[d=2,gt=taxamm7@asn]
+plot/thick=1.5/line/ov/nolabels/color=white/t="12-JUN-2012":"29-JUN-2012" delta_nt_mod[d=2,gt=taxamm7@asn]
 
 set viewport Vamm
 fill/d=3/set_up/nolabels/vlimits=0:120/t=12-JUN-2012:29-JUN-2012/lev=(-inf)(11.5 14 0.1)(inf) temp_mod[z=0:120,gt=taxamm60@asn]
@@ -117,7 +118,7 @@ annotate/size=0.15/normalized/xpos=0.87/ypos=0.85 AMM60
 set text/color=black
 ppl list shakey
 plot/thick=1.5/line/ov/nolabels/color=black/t="12-JUN-2012":"29-JUN-2012" delta_mod[d=3,gt=taxamm60@asn]
-plot/thick=1.5/line/ov/nolabels/color=white/t="12-JUN-2012":"29-JUN-2012" delta_3d_mod[d=3,gt=taxamm60@asn]
+plot/thick=1.5/line/ov/nolabels/color=white/t="12-JUN-2012":"29-JUN-2012" delta_nt_mod[d=3,gt=taxamm60@asn]
 
 set viewport Vobs
 fill/d=3/set_up/nolabels/vlimits=0:120/t=12-JUN-2012:29-JUN-2012/lev=(-inf)(11.5 14 0.1)(inf) temp_obs[z=0:120,gt=taxamm60@asn]
@@ -126,7 +127,7 @@ set text/color=white
 annotate/size=0.15/normalized/xpos=0.87/ypos=0.85 OBS
 set text/color=black
 plot/thick=1.5/line/ov/nolabels/color=black/t="12-JUN-2012":"29-JUN-2012" delta_obs[d=3,gt=taxamm60@asn]
-plot/thick=1.5/line/ov/nolabels/color=white/t="12-JUN-2012":"29-JUN-2012" delta_3d_obs[d=3,gt=taxamm60@asn]
+plot/thick=1.5/line/ov/nolabels/color=white/t="12-JUN-2012":"29-JUN-2012" delta_nt_obs[d=3,gt=taxamm60@asn]
 
 frame/file="FIGURES/ST2_temp.png" /ypixels=2250
 cancel data/all
@@ -135,12 +136,12 @@ cancel data/all
 use "/media/data1/AMM60/FASTNEt/NNA/mooring_ST4.nc"
 use "/media/data1/AMM60/FASTNEt/AMM7/mooring_ST4.nc"
 use "/media/data1/AMM60/FASTNEt/AMM60/mooring_ST4.nc"
-set var/bad=0 delta_3d_mod[d=1]
-set var/bad=0 delta_3d_obs[d=1]
-set var/bad=0 delta_3d_mod[d=2]
-set var/bad=0 delta_3d_obs[d=2]
-set var/bad=0 delta_3d_mod[d=3]
-set var/bad=0 delta_3d_obs[d=3]
+set var/bad=0 delta_nt_mod[d=1]
+set var/bad=0 delta_nt_obs[d=1]
+set var/bad=0 delta_nt_mod[d=2]
+set var/bad=0 delta_nt_obs[d=2]
+set var/bad=0 delta_nt_mod[d=3]
+set var/bad=0 delta_nt_obs[d=3]
 
 set viewport VNNA
 fill/set_up/d=1/nolabels/vlimits=0:120/t="12-JUN-2012":"29-JUN-2012"/lev=(-inf)(11.5 14 0.1)(inf) temp_mod[gt=taxnna@asn,z=0:120]
@@ -151,7 +152,7 @@ annotate/size=0.15/normalized/xpos=0.87/ypos=0.85 NNA
 set text/color=black
 annotate/normalized/xpos=0.02/ypos=1.1 "c) St4"
 plot/thick=1.5/line/ov/nolabels/color=black/t="12-JUN-2012":"29-JUN-2012" delta_mod[d=1,gt=taxnna@asn]
-plot/thick=1.5/line/ov/nolabels/color=white/t="12-JUN-2012":"29-JUN-2012" delta_3d_mod[d=1,gt=taxnna@asn]
+plot/thick=1.5/line/ov/nolabels/color=white/t="12-JUN-2012":"29-JUN-2012" delta_nt_mod[d=1,gt=taxnna@asn]
 
 set viewport VAMM7
 fill/set_up/d=2/nolabels/vlimits=0:120/t=12-JUN-2012:29-JUN-2012/lev=(-inf)(11.5 14 0.1)(inf) temp_mod[z=0:120,gt=taxamm7@asn]
@@ -161,7 +162,7 @@ set text/color=white
 annotate/size=0.15/normalized/xpos=0.87/ypos=0.85 AMM7
 set text/color=black
 plot/thick=1.5/line/ov/nolabels/color=black/t="12-JUN-2012":"29-JUN-2012" delta_mod[d=2,gt=taxamm7@asn]
-plot/thick=1.5/line/ov/nolabels/color=white/t="12-JUN-2012":"29-JUN-2012" delta_3d_mod[d=2,gt=taxamm7@asn]
+plot/thick=1.5/line/ov/nolabels/color=white/t="12-JUN-2012":"29-JUN-2012" delta_nt_mod[d=2,gt=taxamm7@asn]
 
 set viewport Vamm
 fill/d=3/set_up/nolabels/vlimits=0:120/t=12-JUN-2012:29-JUN-2012/lev=(-inf)(11.5 14 0.1)(inf) temp_mod[z=0:120,gt=taxamm60@asn]
@@ -174,7 +175,7 @@ annotate/size=0.15/normalized/xpos=0.87/ypos=0.85 AMM60
 set text/color=black
 ppl list shakey
 plot/thick=1.5/line/ov/nolabels/color=black/t="12-JUN-2012":"29-JUN-2012" delta_mod[d=3,gt=taxamm60@asn]
-plot/thick=1.5/line/ov/nolabels/color=white/t="12-JUN-2012":"29-JUN-2012" delta_3d_mod[d=3,gt=taxamm60@asn]
+plot/thick=1.5/line/ov/nolabels/color=white/t="12-JUN-2012":"29-JUN-2012" delta_nt_mod[d=3,gt=taxamm60@asn]
 
 set viewport Vobs
 fill/d=3/set_up/nolabels/vlimits=0:120/t=12-JUN-2012:29-JUN-2012/lev=(-inf)(11.5 14 0.1)(inf) temp_obs[z=0:120,gt=taxamm60@asn]
@@ -183,7 +184,7 @@ set text/color=white
 annotate/size=0.15/normalized/xpos=0.87/ypos=0.85 OBS
 set text/color=black
 plot/thick=1.5/line/ov/nolabels/color=black/t="12-JUN-2012":"29-JUN-2012" delta_obs[d=3,gt=taxamm60@asn]
-plot/thick=1.5/line/ov/nolabels/color=white/t="12-JUN-2012":"29-JUN-2012" delta_3d_obs[d=3,gt=taxamm60@asn]
+plot/thick=1.5/line/ov/nolabels/color=white/t="12-JUN-2012":"29-JUN-2012" delta_nt_obs[d=3,gt=taxamm60@asn]
 
 frame/file="FIGURES/ST4_temp.png" /ypixels=2250
 cancel data/all
@@ -192,12 +193,12 @@ cancel data/all
 use "/media/data1/AMM60/FASTNEt/NNA/mooring_ST5.nc"
 use "/media/data1/AMM60/FASTNEt/AMM7/mooring_ST5.nc"
 use "/media/data1/AMM60/FASTNEt/AMM60/mooring_ST5.nc"
-set var/bad=0 delta_3d_mod[d=1]
-set var/bad=0 delta_3d_obs[d=1]
-set var/bad=0 delta_3d_mod[d=2]
-set var/bad=0 delta_3d_obs[d=2]
-set var/bad=0 delta_3d_mod[d=3]
-set var/bad=0 delta_3d_obs[d=3]
+set var/bad=0 delta_nt_mod[d=1]
+set var/bad=0 delta_nt_obs[d=1]
+set var/bad=0 delta_nt_mod[d=2]
+set var/bad=0 delta_nt_obs[d=2]
+set var/bad=0 delta_nt_mod[d=3]
+set var/bad=0 delta_nt_obs[d=3]
 
 set viewport VNNA
 fill/set_up/d=1/nolabels/vlimits=0:120/t="12-JUN-2012":"29-JUN-2012"/lev=(-inf)(11.5 14 0.1)(inf) temp_mod[gt=taxnna@asn,z=0:120]
@@ -208,7 +209,7 @@ annotate/size=0.15/normalized/xpos=0.87/ypos=0.85 NNA
 set text/color=black
 annotate/normalized/xpos=0.02/ypos=1.1 "d) St5"
 plot/thick=1.5/line/ov/nolabels/color=black/t="12-JUN-2012":"29-JUN-2012" delta_mod[d=1,gt=taxnna@asn]
-plot/thick=1.5/line/ov/nolabels/color=white/t="12-JUN-2012":"29-JUN-2012" delta_3d_mod[d=1,gt=taxnna@asn]
+plot/thick=1.5/line/ov/nolabels/color=white/t="12-JUN-2012":"29-JUN-2012" delta_nt_mod[d=1,gt=taxnna@asn]
 
 set viewport VAMM7
 fill/set_up/d=2/nolabels/vlimits=0:120/t=12-JUN-2012:29-JUN-2012/lev=(-inf)(11.5 14 0.1)(inf) temp_mod[z=0:120,gt=taxamm7@asn]
@@ -218,7 +219,7 @@ set text/color=white
 annotate/size=0.15/normalized/xpos=0.87/ypos=0.85 AMM7
 set text/color=black
 plot/thick=1.5/line/ov/nolabels/color=black/t="12-JUN-2012":"29-JUN-2012" delta_mod[d=2,gt=taxamm7@asn]
-plot/thick=1.5/line/ov/nolabels/color=white/t="12-JUN-2012":"29-JUN-2012" delta_3d_mod[d=2,gt=taxamm7@asn]
+plot/thick=1.5/line/ov/nolabels/color=white/t="12-JUN-2012":"29-JUN-2012" delta_nt_mod[d=2,gt=taxamm7@asn]
 
 set viewport Vamm
 fill/d=3/set_up/nolabels/vlimits=0:120/t=12-JUN-2012:29-JUN-2012/lev=(-inf)(11.5 14 0.1)(inf) temp_mod[z=0:120,gt=taxamm60@asn]
@@ -231,7 +232,7 @@ annotate/size=0.15/normalized/xpos=0.87/ypos=0.85 AMM60
 set text/color=black
 ppl list shakey
 plot/thick=1.5/line/ov/nolabels/color=black/t="12-JUN-2012":"29-JUN-2012" delta_mod[d=3,gt=taxamm60@asn]
-plot/thick=1.5/line/ov/nolabels/color=white/t="12-JUN-2012":"29-JUN-2012" delta_3d_mod[d=3,gt=taxamm60@asn]
+plot/thick=1.5/line/ov/nolabels/color=white/t="12-JUN-2012":"29-JUN-2012" delta_nt_mod[d=3,gt=taxamm60@asn]
 
 set viewport Vobs
 fill/d=3/set_up/nolabels/vlimits=0:120/t=12-JUN-2012:29-JUN-2012/lev=(-inf)(11.5 14 0.1)(inf) temp_obs[z=0:120,gt=taxamm60@asn]
@@ -240,28 +241,28 @@ set text/color=white
 annotate/size=0.15/normalized/xpos=0.87/ypos=0.85 OBS
 set text/color=black
 plot/thick=1.5/line/ov/nolabels/color=black/t="12-JUN-2012":"29-JUN-2012" delta_obs[d=3,gt=taxamm60@asn]
-plot/thick=1.5/line/ov/nolabels/color=white/t="12-JUN-2012":"29-JUN-2012" delta_3d_obs[d=3,gt=taxamm60@asn]
+plot/thick=1.5/line/ov/nolabels/color=white/t="12-JUN-2012":"29-JUN-2012" delta_nt_obs[d=3,gt=taxamm60@asn]
 
 frame/file="FIGURES/ST5_temp.png" /ypixels=2250
 cancel data/all
 
 !!!!!!!!!!! SE !!!!!!!!!!!!!
 define axis/t="01-JUL-2013 00:30":"31-JUL-2013 22:30":1/units=hours/npoints=743 taxAMM7
-define axis/t="02-JUL-2013 10:30":"29-JUL-2013 10:30"/units=hours/npoints=10 taxAMM73d
+define axis/t="02-JUL-2013 10:30":"29-JUL-2013 10:30"/units=hours/npoints=10 taxAMM7nt
 define axis/t="01-JUL-2013 01:30":"31-JUL-2013 23:30":1/npoints=743/units=hours taxAMM60
-define axis/t="02-JUL-2013 11:30":"29-JUL-2013 11:30"/npoints=10/units=hours taxAMM603d
+define axis/t="02-JUL-2013 11:30":"29-JUL-2013 11:30"/npoints=10/units=hours taxAMM60nt
 define axis/t="01-JUL-2013 01:30":"01-AUG-2013 11:30":1/npoints=755/units=hours taxNNA
-define axis/t="02-JUL-2013 11:30":"29-JUL-2013 11:30"/npoints=10/units=hours taxNNA3d
+define axis/t="02-JUL-2013 11:30":"29-JUL-2013 11:30"/npoints=10/units=hours taxNNAnt
 
 use "/media/data1/AMM60/FASTNEt/NNA/mooring_SE.nc"
 use "/media/data1/AMM60/FASTNEt/AMM7/mooring_SE.nc"
 use "/media/data1/AMM60/FASTNEt/AMM60/mooring_SE.nc"
-set var/bad=0 delta_3d_mod[d=1]
-set var/bad=0 delta_3d_obs[d=1]
-set var/bad=0 delta_3d_mod[d=2]
-set var/bad=0 delta_3d_obs[d=2]
-set var/bad=0 delta_3d_mod[d=3]
-set var/bad=0 delta_3d_obs[d=3]
+set var/bad=0 delta_nt_mod[d=1]
+set var/bad=0 delta_nt_obs[d=1]
+set var/bad=0 delta_nt_mod[d=2]
+set var/bad=0 delta_nt_obs[d=2]
+set var/bad=0 delta_nt_mod[d=3]
+set var/bad=0 delta_nt_obs[d=3]
 
 set viewport VNNA
 fill/set_up/d=1/nolabels/vlimits=0:120/t="03-JUL-2013":"20-JUL-2013"/lev=(-inf)(10 15 0.1)(inf) temp_mod[gt=taxnna@asn,z=0:120]
@@ -272,7 +273,7 @@ annotate/size=0.15/normalized/xpos=0.05/ypos=0.05 NNA
 set text/color=black
 annotate/normalized/xpos=0.02/ypos=1.1 SE
 !plot/thick=1.5/line/ov/nolabels/color=black/t="03-JUL-2013":"20-JUL-2013" delta_mod[d=1,gt=taxnna@asn]
-!plot/thick=1.5/line/ov/nolabels/color=white/t="03-JUL-2013":"20-JUL-2013" delta_3d_mod[d=1,gt=taxnna@asn]
+!plot/thick=1.5/line/ov/nolabels/color=white/t="03-JUL-2013":"20-JUL-2013" delta_nt_mod[d=1,gt=taxnna@asn]
 
 set viewport VAMM7
 fill/set_up/d=2/nolabels/vlimits=0:120/t="03-JUL-2013":"20-JUL-2013"/lev=(-inf)(10 15 0.1)(inf) temp_mod[z=0:120,gt=taxamm7@asn]
@@ -282,7 +283,7 @@ set text/color=white
 annotate/size=0.15/normalized/xpos=0.05/ypos=0.05 AMM7
 set text/color=black
 !plot/thick=1.5/line/ov/nolabels/color=black/t="03-JUL-2013":"20-JUL-2013" delta_mod[d=2,gt=taxamm7@asn]
-!plot/thick=1.5/line/ov/nolabels/color=white/t="03-JUL-2013":"20-JUL-2013" delta_3d_mod[d=2,gt=taxamm7@asn]
+!plot/thick=1.5/line/ov/nolabels/color=white/t="03-JUL-2013":"20-JUL-2013" delta_nt_mod[d=2,gt=taxamm7@asn]
 
 set viewport Vamm
 fill/d=3/set_up/nolabels/vlimits=0:120/t="04-JUL-2013":"20-JUL-2013"/lev=(-inf)(10 15 0.1)(inf) temp_mod[z=0:120,gt=taxamm60@asn]
@@ -295,7 +296,7 @@ annotate/size=0.15/normalized/xpos=0.05/ypos=0.05 AMM60
 set text/color=black
 ppl list shakey
 !plot/thick=1.5/line/ov/nolabels/color=black/t="04-JUL-2013":"20-JUL-2013" delta_mod[d=3,gt=taxamm60@asn]
-!plot/thick=1.5/line/ov/nolabels/color=white/t="04-JUL-2013":"20-JUL-2013" delta_3d_mod[d=3,gt=taxamm60@asn]
+!plot/thick=1.5/line/ov/nolabels/color=white/t="04-JUL-2013":"20-JUL-2013" delta_nt_mod[d=3,gt=taxamm60@asn]
 
 set viewport Vobs
 fill/d=3/set_up/nolabels/vlimits=0:120/t="04-JUL-2013":"20-JUL-2013"/lev=(-inf)(10 15 0.1)(inf) temp_obs[z=0:120,gt=taxamm60@asn]
@@ -304,7 +305,7 @@ set text/color=white
 annotate/size=0.15/normalized/xpos=0.05/ypos=0.05 OBS
 set text/color=black
 !plot/thick=1.5/line/ov/nolabels/color=black/t="03-JUL-2013":"20-JUL-2013" delta_obs[d=3,gt=taxamm60@asn]
-!plot/thick=1.5/line/ov/nolabels/color=white/t="03-JUL-2013":"20-JUL-2013" delta_3d_obs[d=3,gt=taxamm60@asn]
+!plot/thick=1.5/line/ov/nolabels/color=white/t="03-JUL-2013":"20-JUL-2013" delta_nt_obs[d=3,gt=taxamm60@asn]
 
 frame/file="FIGURES/SE_temp.png" /ypixels=2250
 cancel data/all
