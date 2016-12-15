@@ -15,6 +15,10 @@ if(1): # Change flag to skip data loading and processing step if already done.
     import os # Note sure I use this
     import glob # For getting file paths
     import copy # For deep copying variables
+    
+    import sys
+    sys.path.append('../FASTNEt/') # Add the directory with the amm60_data_tools.py file to path
+
     from amm60_data_tools import NEMO_fancy_datestr # convert NEMO time 
     from amm60_data_tools import delta_diagnose # compute pycnocline depth and variance. Incl running window filter
     from amm60_data_tools import window_strat # compute running window filtered stratification
