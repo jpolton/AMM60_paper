@@ -361,6 +361,7 @@ def delta_diagnose( profile, time_counter, depth, max_depth ):
     This function is called by (in order to track changes don't break dependencies):
     internaltidemap_AMM60_paper.py
     pycnocline_mod_obs_virtual_moorings.ipynb
+    write_delta.ipynb
     """
     # Assume time counter data is relative to 1950 and in seconds
     time_origin = '1950-01-01 00:00:00'
