@@ -60,8 +60,8 @@ def compute_fft(filename,Index_start,Index_end):
     ### Load the data ###
     delta_obs = amm60_data_tools.readMODELnc(filename,'delta_obs')[Index_start:Index_end]
     delta_mod = amm60_data_tools.readMODELnc(filename,'delta_mod')[Index_start:Index_end]
-    delta_3d_obs = amm60_data_tools.readMODELnc(filename,'delta_nt_obs')[Index_start:Index_end]
-    delta_3d_mod = amm60_data_tools.readMODELnc(filename,'delta_nt_mod')[Index_start:Index_end]
+#    delta_3d_obs = amm60_data_tools.readMODELnc(filename,'delta_nt_obs')[Index_start:Index_end]
+#    delta_3d_mod = amm60_data_tools.readMODELnc(filename,'delta_nt_mod')[Index_start:Index_end]
 
     ### FFT ###
     print(len(delta_mod))
@@ -70,8 +70,10 @@ def compute_fft(filename,Index_start,Index_end):
 # Old FFT calls
 #    f, fftobs = scipy.signal.welch(delta_obs-delta_3d_obs, fs=1.0, window='hanning', nperseg=len_seg, noverlap=len_seg*2/3, nfft=2*len_seg, detrend='linear', return_onesided=True, scaling='density')    
 #    f, fftmod = scipy.signal.welch(delta_mod-delta_3d_mod, fs=1.0, window='hanning', nperseg=len_seg, noverlap=len_seg*2/3, nfft=2*len_seg, detrend='linear', return_onesided=True, scaling='density')
-    f, fftobs = scipy.signal.welch(delta_obs-delta_3d_obs, fs=1.0, window='hanning', nperseg=len_seg, noverlap = len_seg*0.5, nfft=1*len_seg,detrend='linear', return_onesided=True, scaling='spectrum')    
-    f, fftmod = scipy.signal.welch(delta_mod-delta_3d_mod, fs=1.0, window='hanning', nperseg=len_seg, noverlap = len_seg*0.5, nfft=1*len_seg,detrend='linear', return_onesided=True, scaling='spectrum')
+#    f, fftobs = scipy.signal.welch(delta_obs-delta_3d_obs, fs=1.0, window='hanning', nperseg=len_seg, noverlap = len_seg*0.5, nfft=1*len_seg,detrend='linear', return_onesided=True, scaling='spectrum')    
+#    f, fftmod = scipy.signal.welch(delta_mod-delta_3d_mod, fs=1.0, window='hanning', nperseg=len_seg, noverlap = len_seg*0.5, nfft=1*len_seg,detrend='linear', return_onesided=True, scaling='spectrum')
+    f, fftobs = scipy.signal.welch(delta_obs, fs=1.0, window='hanning', nperseg=len_seg, noverlap = len_seg*0.5, nfft=1*len_seg,detrend='linear', return_onesided=True, scaling='spectrum')    
+    f, fftmod = scipy.signal.welch(delta_mod, fs=1.0, window='hanning', nperseg=len_seg, noverlap = len_seg*0.5, nfft=1*len_seg,detrend='linear', return_onesided=True, scaling='spectrum')
 
     return[f,fftobs,fftmod]
 
@@ -132,12 +134,10 @@ for mooring_num in ['ST1','ST2','ST4','ST5']:
 
     # Plot linear y-axis
     axes = plt.figure(figsize=(25, 10),dpi=250,facecolor='w', edgecolor='k').add_subplot(111)
-    #plt.figure(figsize=(25, 10), dpi=250, facecolor='w', edgecolor='k')
     plt.rcParams.update({'font.size': 25})
 
     period_hrs = 12.42; lineformat = 'r--'; label='M2'
     plt.plot( [1/period_hrs, 1/period_hrs], [1E-2, 1E7], lineformat)
-    #ax.text(1/(3600*period_hrs), 1E6, label)
 
     plt.plot(famm60,fftobsamm60,color='k',label='Observations',linewidth=3)
     plt.plot(famm60,fftmodamm60,color='r',label='AMM60',linewidth=2)
@@ -179,7 +179,7 @@ for mooring_num in ['ST1','ST2','ST4','ST5']:
     plt.plot( [1/period_hrs, 1/period_hrs], [1E-6, 1E7], lineformat,label='In')
 
 
-    plt.xlim([0,0.2])
+    plt.xlim([1/48.,1/5.])
     plt.ylim([0, 30])
 
     # Switch the freq axis ticks and labels into hours
